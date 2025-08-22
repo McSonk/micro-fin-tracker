@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">MicroFinTracker</string>
+    <string name="subway_btn">Metro</string>
+    <string name="bus_btn">Metrobús</string>
+    <string name="read_logs_btn">Leer logs</string>
+</resources>
