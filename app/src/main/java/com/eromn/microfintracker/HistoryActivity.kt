@@ -26,7 +26,7 @@ class HistoryActivity : AppCompatActivity() {
             insets
         }
 
-        val trips = txDataSource.readTransactions()
+        val trips = txDataSource.readSortedTransactions()
         binding.recyclerHistory.adapter = HistoryAdapter(trips)
         binding.recyclerHistory.layoutManager = LinearLayoutManager(this)
     }

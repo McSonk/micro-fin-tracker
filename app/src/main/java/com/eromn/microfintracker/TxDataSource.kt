@@ -6,7 +6,6 @@ import java.io.FileNotFoundException
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
-import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
@@ -48,5 +47,10 @@ class TxDataSource(private val context: Context) {
         } catch (e: FileNotFoundException) {
             emptyList()
         }
+    }
+
+    fun readSortedTransactions(): List<Trip> {
+        val trips = readTransactions()
+        return trips.sortedByDescending { it.timestamp }
     }
 }
