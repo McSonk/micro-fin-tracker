@@ -4,8 +4,8 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:gravity="center"
+    android:orientation="vertical"
     android:padding="24dp"
     tools:context=".MainActivity">
 
@@ -13,21 +13,21 @@
         android:id="@+id/btnTrain"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/subway_btn"
-        android:layout_marginBottom="16dp"/>
+        android:layout_marginBottom="16dp"
+        android:text="@string/subway_btn" />
 
     <Button
         android:id="@+id/btnBus"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/bus_btn"
-        android:layout_marginBottom="16dp"/>
+        android:layout_marginBottom="16dp"
+        android:text="@string/bus_btn" />
 
     <Button
         android:id="@+id/btnLog"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/read_logs_btn"
-        android:layout_marginTop="24dp"/>
+        android:layout_marginTop="24dp"
+        android:text="@string/read_logs_btn" />
 
 </LinearLayout>
