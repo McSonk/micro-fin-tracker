@@ -11,6 +11,7 @@ import com.eromn.microfintracker.databinding.ActivityMainBinding
 import java.io.FileNotFoundException
 
 class MainActivity : AppCompatActivity() {
+    // Holds references to all views in the activity_main.xml layout for easy access.
     private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -19,12 +20,16 @@ class MainActivity : AppCompatActivity() {
 
         // Inflate using View Binding
         binding = ActivityMainBinding.inflate(layoutInflater)
+        // Sets the main content view of the Activity's window.
         setContentView(binding.root)
 
-        // setContentView(R.layout.activity_main)
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
+        // Listen for window insets changes on the main layout.
+        ViewCompat.setOnApplyWindowInsetsListener(binding.main) { v, insets ->
+            // Get the insets dimensions for system bars (status and navigation).
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            // Apply padding to the view to account for system bar sizes.
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            // Return the insets, allowing other views to also process them.
             insets
         }
 
@@ -74,7 +79,5 @@ class MainActivity : AppCompatActivity() {
         val sdf = java.text.SimpleDateFormat("yyyy-MM-dd HH:mm", java.util.Locale.getDefault())
         return sdf.format(java.util.Date(timestamp))
     }
-
-
 
 }
