@@ -3,14 +3,25 @@ package com.eromn.microfintracker
 import android.content.Context
 import android.content.Context.MODE_APPEND
 import java.io.FileNotFoundException
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 data class Trip(val timestamp: Long, val type: String)
 
 class TxDataSource(private val context: Context) {
 
     fun formatTimestamp(timestamp: Long): String {
-        val sdf = java.text.SimpleDateFormat("yyyy-MM-dd HH:mm", java.util.Locale.getDefault())
-        return sdf.format(java.util.Date(timestamp))
+        val instant = Instant.ofEpochMilli(timestamp)
+        val localDateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault())
+
+        val mxLocal = Locale.Builder().setLanguage("es").setRegion("MX").build()
+
+        val formatter = DateTimeFormatter.ofPattern("MMM d, h:mm a", mxLocal)
+        return localDateTime.format(formatter)
     }
 
     fun logTransaction(type: String) {
