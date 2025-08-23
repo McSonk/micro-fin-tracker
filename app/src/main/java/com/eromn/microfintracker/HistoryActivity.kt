@@ -7,15 +7,16 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.eromn.microfintracker.databinding.ActivityHistoryBinding
-import java.io.FileNotFoundException
 
 class HistoryActivity : AppCompatActivity() {
     private lateinit var binding: ActivityHistoryBinding
+    private lateinit var txDataSource: TxDataSource
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
+        txDataSource = TxDataSource(this)
         binding = ActivityHistoryBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -25,26 +26,8 @@ class HistoryActivity : AppCompatActivity() {
             insets
         }
 
-        val trips = readTransportLog()
+        val trips = txDataSource.readTransactions()
         binding.recyclerHistory.adapter = HistoryAdapter(trips)
         binding.recyclerHistory.layoutManager = LinearLayoutManager(this)
-    }
-
-    private fun readTransportLog(): List<Trip> {
-        return try {
-            openFileInput("transport_log.csv")
-                .bufferedReader()
-                .readLines()
-                .mapNotNull { line ->
-                    val parts = line.split(",")
-                    if (parts.size == 2) {
-                        val time = parts[0].toLongOrNull()
-                        val type = parts[1]
-                        if (time != null) Trip(time, type) else null
-                    } else null
-                }
-        } catch (e: FileNotFoundException) {
-            emptyList()
-        }
     }
 }
