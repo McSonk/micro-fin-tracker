@@ -23,6 +23,7 @@ class HistoryAdapter(
             // TODO: change to static
             binding.txtDate.text = dateUtils.formatTimestamp(transaction.timestamp)
             binding.txtType.text = transaction.description
+            binding.txtAmount.text = transaction.amount.toString()
 
             val context = binding.root.context
             if (transaction.isRead) {
