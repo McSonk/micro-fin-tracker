@@ -74,23 +74,25 @@ class HistoryActivity : AppCompatActivity() {
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 // This method is called when an item is fully swiped.
+                val position = viewHolder.bindingAdapterPosition // Use bindingAdapterPosition
+                if (position == RecyclerView.NO_POSITION) {
+                    return // Item likely already removed or not bound
+                }
+                val transaction = historyAdapter.transactions[position]
+
                 // The 'direction' parameter will tell you which way it was swiped.
-
                 if (direction == ItemTouchHelper.LEFT) {
-                    val position = viewHolder.adapterPosition
-                    val transactionToDelete = historyAdapter.transactions[position]
-
                     // 1. Tell the ViewModel to delete the transaction
-                    historyViewModel.deleteTransaction(transactionToDelete)
+                    historyViewModel.deleteTransaction(transaction)
 
                     // 2. Show a Snackbar for feedback (and optional UNDO)
-                    Snackbar.make(binding.root, "Deleted: ${transactionToDelete.description}", Snackbar.LENGTH_LONG)
+                    Snackbar.make(binding.root, "Deleted: ${transaction.description}", Snackbar.LENGTH_LONG)
                         .setAction("UNDO"){
                             // To UNDO, we re-insert the transaction.
                             historyViewModel.logTransaction(
-                                transactionToDelete.description,
-                                transactionToDelete.amount,
-                                transactionToDelete.timestamp
+                                transaction.description,
+                                transaction.amount,
+                                transaction.timestamp
                             )
                             Toast.makeText(this@HistoryActivity, "Transaction restored!", Toast.LENGTH_SHORT).show()
                         }
@@ -102,12 +104,31 @@ class HistoryActivity : AppCompatActivity() {
                         Toast.LENGTH_SHORT
                     ).show()
                 } else if (direction == ItemTouchHelper.RIGHT) {
-                    val position = viewHolder.adapterPosition
-                    // IMPORTANT: To make the item reappear after swipe (since we are not deleting yet),
-                    // we need to notify the adapter that the item at this position has changed.
-                    // This will trigger a rebind and reset its position.
-                    historyAdapter.notifyItemChanged(position)
-                }// end if
+                    if (!transaction.isRead) { // Only mark as read if it's currently unread
+                        historyViewModel.markAsRead(transaction)
+                        Snackbar.make(
+                            binding.root,
+                            "${transaction.description} marked as read",
+                            Snackbar.LENGTH_LONG
+                        )
+                            .setAction("UNDO") {
+                                historyViewModel.markAsUnread(transaction)
+                                // The UI will update automatically due to Flow/LiveData observation
+                            }
+                            .show()
+                    } else {
+                        historyViewModel.markAsUnread(transaction)
+                        Snackbar.make(
+                            binding.root,
+                            "${transaction.description} marked as unread",
+                            Snackbar.LENGTH_LONG
+                        )
+                            .setAction("UNDO") {
+                                historyViewModel.markAsRead(transaction)
+                            }
+                            .show()
+                    }// end if-else isRead
+                }// end if-else direction
             }// end onSwiped
 
             override fun onChildDraw(
@@ -133,12 +154,12 @@ class HistoryActivity : AppCompatActivity() {
                     .addSwipeLeftBackgroundColor(
                         ContextCompat.getColor(this@HistoryActivity, android.R.color.holo_red_dark)
                     )
-                    .addSwipeLeftActionIcon(android.R.drawable.ic_menu_delete)
+                    .addSwipeLeftActionIcon(R.drawable.ic_delete)
                     // Swipe Right
                     .addSwipeRightBackgroundColor(
                         ContextCompat.getColor(this@HistoryActivity, android.R.color.holo_green_dark)
                     )
-                    .addSwipeRightActionIcon(android.R.drawable.ic_menu_day)
+                    .addSwipeRightActionIcon(R.drawable.ic_check)
                     .create()
                     .decorate()
                 // VERY IMPORTANT: Call super.onChildDraw to allow ItemTouchHelper to move the view

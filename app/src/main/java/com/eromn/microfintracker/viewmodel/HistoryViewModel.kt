@@ -25,6 +25,16 @@ class HistoryViewModel(private val repository: TransactionRepository) : ViewMode
         repository.insert(newTransaction)
     }
 
+    fun markAsRead(transaction: Transaction) = viewModelScope.launch(Dispatchers.IO) {
+        val updatedTransaction = transaction.copy(isRead = true)
+        repository.update(updatedTransaction)
+    }
+
+    fun markAsUnread(transaction: Transaction) = viewModelScope.launch(Dispatchers.IO) {
+        val updatedTransaction = transaction.copy(isRead = false)
+        repository.update(updatedTransaction)
+    }
+
     fun deleteTransaction(transaction: Transaction) = viewModelScope.launch(Dispatchers.IO) {
         repository.delete(transaction)
     }
