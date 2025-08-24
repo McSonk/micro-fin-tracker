@@ -3,14 +3,16 @@ package com.eromn.microfintracker
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.eromn.microfintracker.data.Transaction
 import com.eromn.microfintracker.databinding.ItemHistoryBinding
 import com.eromn.microfintracker.utils.DateUtils
 
 class HistoryAdapter(
-    internal var transactions: MutableList<Transaction> = mutableListOf()
-) : RecyclerView.Adapter<HistoryAdapter.HistoryViewHolder>() {
+    var transactions: MutableList<Transaction>
+) : ListAdapter<Transaction, HistoryAdapter.HistoryViewHolder> (TransactionDiffCallback()) {
 
     private val dateUtils = DateUtils()
 
@@ -56,16 +58,26 @@ class HistoryAdapter(
     }
 
     override fun onBindViewHolder(holder: HistoryViewHolder, position: Int) {
-        val transaction = transactions[position]
+        val transaction = getItem(position)
         holder.bind(transaction)
     }
 
-    override fun getItemCount() = transactions.size
-
+    // This function will be called by the Flow/LiveData observer in your Activity
+    // ListAdapter's submitList will handle diffing and updating efficiently.
     fun updateTransactions(newTransactions: List<Transaction>) {
         transactions.clear()
         transactions.addAll(newTransactions)
-        // TODO: Use DiffUtil instead
-        notifyDataSetChanged()
+        submitList(newTransactions)
     }
-}
+} // end class HistoryAdapter
+
+class TransactionDiffCallback: DiffUtil.ItemCallback<Transaction>() {
+    override fun areItemsTheSame(oldItem: Transaction, newItem: Transaction): Boolean {
+        return oldItem.id == newItem.id
+    }
+
+    override fun areContentsTheSame(oldItem: Transaction, newItem: Transaction): Boolean {
+        // Check all fields that might change and affect the UI, especially isRead
+        return oldItem == newItem
+    }
+}// end class TransactionDiffCallback

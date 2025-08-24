@@ -78,7 +78,7 @@ class HistoryActivity : AppCompatActivity() {
                 if (position == RecyclerView.NO_POSITION) {
                     return // Item likely already removed or not bound
                 }
-                val transaction = historyAdapter.transactions[position]
+                val transaction = historyAdapter.currentList[position]
 
                 // The 'direction' parameter will tell you which way it was swiped.
                 if (direction == ItemTouchHelper.LEFT) {
