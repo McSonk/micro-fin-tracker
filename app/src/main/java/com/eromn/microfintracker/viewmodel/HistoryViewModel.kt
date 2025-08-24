@@ -12,11 +12,15 @@ import kotlinx.coroutines.launch
 class HistoryViewModel(private val repository: TransactionRepository) : ViewModel() {
     val allTransactions: Flow<List<Transaction>> = repository.allTransactions
 
-    fun logTransaction(type: String, amount: Double) = viewModelScope.launch(Dispatchers.IO) {
+    fun logTransaction(
+        description: String,
+        amount: Double,
+        timestamp: Long = System.currentTimeMillis()
+    ) = viewModelScope.launch(Dispatchers.IO) {
         val newTransaction = Transaction(
-            description = type,
+            description = description,
             amount = amount,
-            timestamp = System.currentTimeMillis()
+            timestamp = timestamp
         )
         repository.insert(newTransaction)
     }

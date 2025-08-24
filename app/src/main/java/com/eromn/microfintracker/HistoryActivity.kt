@@ -82,6 +82,15 @@ class HistoryActivity : AppCompatActivity() {
 
                     // 2. Show a Snackbar for feedback (and optional UNDO)
                     Snackbar.make(binding.root, "Deleted: ${transactionToDelete.description}", Snackbar.LENGTH_LONG)
+                        .setAction("UNDO"){
+                            // To UNDO, we re-insert the transaction.
+                            historyViewModel.logTransaction(
+                                transactionToDelete.description,
+                                transactionToDelete.amount,
+                                transactionToDelete.timestamp
+                            )
+                            Toast.makeText(this@HistoryActivity, "Transaction restored!", Toast.LENGTH_SHORT).show()
+                        }
                         .show()
 
                     Toast.makeText(
