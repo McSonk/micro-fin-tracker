@@ -1,10 +1,12 @@
 package com.eromn.microfintracker
 
+import android.graphics.Canvas
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
@@ -19,6 +21,7 @@ import com.eromn.microfintracker.viewmodel.HistoryViewModelFactory
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator
 
 class HistoryActivity : AppCompatActivity() {
     private lateinit var binding: ActivityHistoryBinding
@@ -106,6 +109,41 @@ class HistoryActivity : AppCompatActivity() {
                     historyAdapter.notifyItemChanged(position)
                 }// end if
             }// end onSwiped
+
+            override fun onChildDraw(
+                c: Canvas,
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                dX: Float, // How much the item swiped horiz
+                dy: Float, // .... vertical (0 for horizontal swipes)
+                actionState: Int,
+                isCurrentlyActive: Boolean
+            ){
+                // Use the RecyclerViewSwipeDecorator for easy styling
+                RecyclerViewSwipeDecorator.Builder(
+                    c,
+                    recyclerView,
+                    viewHolder,
+                    dX,
+                    dy,
+                    actionState,
+                    isCurrentlyActive
+                )
+                    // Swipe Left
+                    .addSwipeLeftBackgroundColor(
+                        ContextCompat.getColor(this@HistoryActivity, android.R.color.holo_red_dark)
+                    )
+                    .addSwipeLeftActionIcon(android.R.drawable.ic_menu_delete)
+                    // Swipe Right
+                    .addSwipeRightBackgroundColor(
+                        ContextCompat.getColor(this@HistoryActivity, android.R.color.holo_green_dark)
+                    )
+                    .addSwipeRightActionIcon(android.R.drawable.ic_menu_day)
+                    .create()
+                    .decorate()
+                // VERY IMPORTANT: Call super.onChildDraw to allow ItemTouchHelper to move the view
+                super.onChildDraw(c, recyclerView, viewHolder, dX, dy, actionState, isCurrentlyActive)
+            }// end onChildDraw
         }// end simpleItemTouchCallback
 
         val itemTouchHelper = ItemTouchHelper(simpleItemTouchCallback)

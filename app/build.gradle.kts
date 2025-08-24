@@ -52,6 +52,8 @@ dependencies {
     ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.room.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    // swipedecorator
+    implementation(libs.it.xabaras.swipedecorator)
     // other stuff...
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
