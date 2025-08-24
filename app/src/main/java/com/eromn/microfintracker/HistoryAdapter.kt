@@ -7,8 +7,7 @@ import com.eromn.microfintracker.data.Transaction
 import com.eromn.microfintracker.databinding.ItemHistoryBinding
 import com.eromn.microfintracker.utils.DateUtils
 
-class HistoryAdapter(private var transactions: MutableList<Transaction> = mutableListOf()) :
-    // TODO: handle deletion
+class HistoryAdapter(internal var transactions: MutableList<Transaction> = mutableListOf()) :
     // TODO: Mark as "read"
 
     RecyclerView.Adapter<HistoryAdapter.HistoryViewHolder>() {
