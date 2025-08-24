@@ -12,11 +12,11 @@ interface TransactionDao {
     fun getAll(): Flow<List<Transaction>>
 
     @Insert
-    fun insert(transaction: Transaction)
+    suspend fun insert(transaction: Transaction)
 
     @Delete
-    fun delete(transaction: Transaction)
+    suspend fun delete(transaction: Transaction)
 
     @Query("DELETE FROM transactions WHERE id = :id")
-    fun deleteById(id: Int)
+    suspend fun deleteById(id: Int)
 }
