@@ -2,5 +2,12 @@
     <string name="app_name">MicroFinTracker</string>
     <string name="subway_btn">Metro</string>
     <string name="bus_btn">Metrobús</string>
+    <string name="other_btn">Agregar otro gasto"</string>
     <string name="read_logs_btn">Leer logs</string>
+    <!-- Add -->
+    <string name="add_tx_title">Agregar transacción</string>
+    <string name="add_tx_description">Descripción</string>
+    <string name="add_tx_amount">Monto</string>
+    <string name="add_tx_btn_add">Agregar</string>
+    <string name="add_tx_btn_cancel">Cancelar</string>
 </resources>

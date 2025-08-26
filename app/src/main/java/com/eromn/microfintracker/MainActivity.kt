@@ -14,7 +14,7 @@ import com.eromn.microfintracker.databinding.ActivityMainBinding
 import com.eromn.microfintracker.viewmodel.HistoryViewModel
 import com.eromn.microfintracker.viewmodel.HistoryViewModelFactory
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), AddTransactionBS.TransactionDetailsListener {
     // Holds references to all views in the activity_main.xml layout for easy access.
     private lateinit var binding: ActivityMainBinding
     private val historyViewModel: HistoryViewModel by viewModels {
@@ -54,9 +54,22 @@ class MainActivity : AppCompatActivity() {
             historyViewModel.logTransaction("Metrobús", 6.0)
         }
 
+        binding.btnOther.setOnClickListener {
+            val bsFragment = AddTransactionBS.newInstance()
+            // Set the listener to this Activity, because this Activity
+            // implements TransactionDetailsListener
+            bsFragment.setTransactionDetailsListener(this)
+            // Show the BottomSheet
+            bsFragment.show(supportFragmentManager, AddTransactionBS.TAG)
+        }
+
         binding.btnLog.setOnClickListener {
             startActivity(Intent(this, HistoryActivity::class.java))
         }
-    }
+    }// end onCreate
 
-}
+    override fun onTransactionDetailsEntered(description: String, amount: Double) {
+        // This is where you receive the data from the BottomSheetDialogFragment
+        historyViewModel.logTransaction(description, amount)
+    }
+}// end class MainActivity
