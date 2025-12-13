@@ -33,13 +33,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.eromn.microfintracker.ui.theme.AppTheme
+import com.eromn.microfintracker.ui.theme.FinTrackTheme
 
 class MainComponentActivity: ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            AppTheme {
+            FinTrackTheme() {
                 Surface (modifier = Modifier.fillMaxSize()) {
                     MessageCard(Message(
                         "Test",
@@ -112,7 +112,7 @@ class MainComponentActivity: ComponentActivity() {
     )
     @Composable
     fun PreviewMessage(){
-        AppTheme {
+        FinTrackTheme() {
             Surface {
                 MessageCard(
                     Message("Test", "This is a test message")
@@ -134,7 +134,7 @@ class MainComponentActivity: ComponentActivity() {
                 "This is a test response"
             )
         )
-        AppTheme {
+        FinTrackTheme() {
             Conversation(samples)
         }
     }
