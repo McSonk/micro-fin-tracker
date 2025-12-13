@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import com.eromn.microfintracker.databinding.BsAddTransactionBinding
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -68,6 +69,7 @@ class AddTransactionBS : BottomSheetDialogFragment() {
             if (isValid) {
                 val finalAmount = amountString.toDouble()
                 listener?.onTransactionDetailsEntered(description, finalAmount)
+                Toast.makeText(requireContext(), "¡Viaje agregado!", Toast.LENGTH_SHORT).show()
                 dismiss()
             }// end if-else isValid
         }// end btnSaveTransaction
