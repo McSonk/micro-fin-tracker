@@ -15,6 +15,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -227,15 +229,31 @@ class HistoryActivity : AppCompatActivity() {
             }
             Text(
                 transaction.amount.toString(),
-                color = MaterialTheme.colorScheme.tertiary
+                color = MaterialTheme.colorScheme.tertiary,
+                modifier = Modifier.padding(start = 16.dp, top = 10.dp),
+                style = MaterialTheme.typography.labelLarge
             )
         }
     }
 
     @Composable
+    fun TxHistory(txs: List<Transaction>){
+        LazyColumn {
+            items(txs){ transaction ->
+                TransactionUI(transaction)
+            }
+        }
+    }
+
+    @Composable
     fun MainCanvas(){
-        var tx = Transaction(0, "uBike", 10.0, 1234567890)
-        TransactionUI(tx)
+        val samples = listOf(
+            Transaction(0, "uBike", 10.0, 1234567890),
+            Transaction(2, "MRT", 20.0, 1234567890),
+            Transaction(3, "Señora pancakes", 50.0, 1234567890)
+        )
+
+        TxHistory(samples)
     }
 
     @Preview(showBackground = true)
