@@ -6,6 +6,25 @@ import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -14,8 +33,11 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.eromn.microfintracker.data.AppDatabase
+import com.eromn.microfintracker.data.Transaction
 import com.eromn.microfintracker.data.TransactionRepository
 import com.eromn.microfintracker.databinding.ActivityHistoryBinding
+import com.eromn.microfintracker.ui.theme.FinTrackTheme
+import com.eromn.microfintracker.utils.DateUtils
 import com.eromn.microfintracker.viewmodel.HistoryViewModel
 import com.eromn.microfintracker.viewmodel.HistoryViewModelFactory
 import com.google.android.material.snackbar.Snackbar
@@ -26,6 +48,7 @@ import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator
 class HistoryActivity : AppCompatActivity() {
     private lateinit var binding: ActivityHistoryBinding
     private lateinit var historyAdapter: HistoryAdapter
+    private val dateUtils = DateUtils()
 
     private val historyViewModel: HistoryViewModel by viewModels {
         HistoryViewModelFactory(
@@ -43,6 +66,14 @@ class HistoryActivity : AppCompatActivity() {
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
+        }
+
+        binding.composeView.setContent {
+            FinTrackTheme() {
+                Surface(modifier = Modifier.fillMaxSize()) {
+                    MainCanvas()
+                }
+            }
         }
 
         // Initialize adapter with an empty list and the delete listener
@@ -170,4 +201,49 @@ class HistoryActivity : AppCompatActivity() {
         val itemTouchHelper = ItemTouchHelper(simpleItemTouchCallback)
         itemTouchHelper.attachToRecyclerView(binding.recyclerHistory)
     }
+
+    @Composable
+    fun TransactionUI(transaction: Transaction) {
+        Row(Modifier.padding(all = 8.dp)) {
+            Image(
+                painter = painterResource(R.drawable.ic_launcher_foreground),
+                "Stock image",
+                Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    //.border(1.5.dp, MaterialTheme.colorScheme.primary)
+            )
+            Spacer(Modifier.width(8.dp))
+            Column() {
+                Text(
+                    text = transaction.description,
+                    style = MaterialTheme.typography.labelLarge
+                )
+                Text(
+                    text = dateUtils.formatTimestamp(transaction.timestamp),
+                    color = MaterialTheme.colorScheme.secondary,
+                    style = MaterialTheme.typography.titleSmall
+                )
+            }
+            Text(
+                transaction.amount.toString(),
+                color = MaterialTheme.colorScheme.tertiary
+            )
+        }
+    }
+
+    @Composable
+    fun MainCanvas(){
+        var tx = Transaction(0, "uBike", 10.0, 1234567890)
+        TransactionUI(tx)
+    }
+
+    @Preview(showBackground = true)
+    @Composable
+    fun Preview(){
+        FinTrackTheme() {
+            MainCanvas()
+        }
+    }
+
 }

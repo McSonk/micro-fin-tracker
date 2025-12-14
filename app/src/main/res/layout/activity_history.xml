@@ -9,9 +9,15 @@
     android:padding="16dp"
     tools:context=".HistoryActivity">
 
+    <androidx.compose.ui.platform.ComposeView
+        android:id="@+id/composeView"
+        android:layout_width="match_parent"
+        android:layout_height="150dp" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerHistory"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
+
 
 </LinearLayout>
