@@ -11,17 +11,23 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
@@ -71,9 +77,17 @@ class HistoryActivity : AppCompatActivity() {
         }
 
         binding.composeView.setContent {
+            //temporarily here
+            // Retrieve transactions from db
+            val transactions by historyViewModel.allTransactions.collectAsState(initial = emptyList())
             FinTrackTheme() {
-                Surface(modifier = Modifier.fillMaxSize()) {
-                    MainCanvas()
+                Surface(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .windowInsetsPadding(WindowInsets.systemBars) // handle system bars
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                ) {
+                    MainCanvas(transactions)
                 }
             }
         }
@@ -238,29 +252,35 @@ class HistoryActivity : AppCompatActivity() {
 
     @Composable
     fun TxHistory(txs: List<Transaction>){
-        LazyColumn {
+        LazyColumn (
+            modifier = Modifier
+                .fillMaxSize()
+        ) {
             items(txs){ transaction ->
                 TransactionUI(transaction)
+                HorizontalDivider(
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
             }
         }
     }
 
     @Composable
-    fun MainCanvas(){
+    fun MainCanvas(txs: List<Transaction>){
+        TxHistory(txs)
+    }
+
+    @Preview(showBackground = true)
+    @Composable
+    fun Preview(){
         val samples = listOf(
             Transaction(0, "uBike", 10.0, 1234567890),
             Transaction(2, "MRT", 20.0, 1234567890),
             Transaction(3, "Señora pancakes", 50.0, 1234567890)
         )
 
-        TxHistory(samples)
-    }
-
-    @Preview(showBackground = true)
-    @Composable
-    fun Preview(){
         FinTrackTheme() {
-            MainCanvas()
+            MainCanvas(samples)
         }
     }
 
