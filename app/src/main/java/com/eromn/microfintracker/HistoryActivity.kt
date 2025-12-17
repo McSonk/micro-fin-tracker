@@ -24,7 +24,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -85,7 +88,8 @@ class HistoryActivity : AppCompatActivity() {
                     modifier = Modifier
                         .fillMaxSize()
                         .windowInsetsPadding(WindowInsets.systemBars) // handle system bars
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    color = MaterialTheme.colorScheme.background
                 ) {
                     MainCanvas(transactions)
                 }
@@ -219,35 +223,69 @@ class HistoryActivity : AppCompatActivity() {
     }
 
     @Composable
-    fun TransactionUI(transaction: Transaction) {
-        Row(Modifier.padding(all = 8.dp)) {
-            Image(
-                painter = painterResource(R.drawable.ic_launcher_foreground),
-                "Stock image",
-                Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-                    //.border(1.5.dp, MaterialTheme.colorScheme.primary)
-            )
-            Spacer(Modifier.width(8.dp))
-            Column() {
+    fun TransactionUI(
+        transaction: Transaction,
+        onToggleRead: (Transaction) -> Unit,
+        onRemove: (Transaction) -> Unit,
+        modifier: Modifier = Modifier,
+    ) {
+        // Define the state
+        val swipeToDismissBoxState = rememberSwipeToDismissBoxState(
+            confirmValueChange = {
+                if (it == SwipeToDismissBoxValue.StartToEnd) {
+                    onToggleRead(transaction)
+                }
+                else if (it == SwipeToDismissBoxValue.EndToStart) {
+                    onRemove(transaction)
+                }
+                // Reset item when toggling done status (return to the callback)
+                it != SwipeToDismissBoxValue.StartToEnd
+            }
+        )
+
+        SwipeToDismissBox(
+            state = swipeToDismissBoxState,
+            modifier = modifier.fillMaxSize(),
+            backgroundContent = {
+                when (swipeToDismissBoxState.dismissDirection) {
+                    SwipeToDismissBoxValue.StartToEnd -> {
+                    }
+                    SwipeToDismissBoxValue.EndToStart -> {
+                    }
+                    SwipeToDismissBoxValue.Settled -> {}
+                }
+            }
+        ) {
+            Row(Modifier.padding(all = 8.dp)) {
+                Image(
+                    painter = painterResource(R.drawable.ic_launcher_foreground),
+                    "Stock image",
+                    Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        //.border(1.5.dp, MaterialTheme.colorScheme.primary)
+                )
+                Spacer(Modifier.width(8.dp))
+                Column() {
+                    Text(
+                        text = transaction.description,
+                        style = MaterialTheme.typography.labelLarge
+                    )
+                    Text(
+                        text = dateUtils.formatTimestamp(transaction.timestamp),
+                        color = MaterialTheme.colorScheme.secondary,
+                        style = MaterialTheme.typography.titleSmall
+                    )
+                }
                 Text(
-                    text = transaction.description,
+                    transaction.amount.toString(),
+                    color = MaterialTheme.colorScheme.tertiary,
+                    modifier = Modifier.padding(start = 16.dp, top = 10.dp),
                     style = MaterialTheme.typography.labelLarge
                 )
-                Text(
-                    text = dateUtils.formatTimestamp(transaction.timestamp),
-                    color = MaterialTheme.colorScheme.secondary,
-                    style = MaterialTheme.typography.titleSmall
-                )
             }
-            Text(
-                transaction.amount.toString(),
-                color = MaterialTheme.colorScheme.tertiary,
-                modifier = Modifier.padding(start = 16.dp, top = 10.dp),
-                style = MaterialTheme.typography.labelLarge
-            )
         }
+
     }
 
     @Composable
@@ -256,8 +294,16 @@ class HistoryActivity : AppCompatActivity() {
             modifier = Modifier
                 .fillMaxSize()
         ) {
-            items(txs){ transaction ->
-                TransactionUI(transaction)
+            items(
+                items = txs,
+                key = { it.id }
+            ){ transaction ->
+                TransactionUI(
+                    transaction,
+                    onToggleRead = { historyViewModel.markAsRead(it) },
+                    onRemove = { historyViewModel.deleteTransaction(it) },
+                    modifier = Modifier.animateItem()
+                )
                 HorizontalDivider(
                     modifier = Modifier.padding(vertical = 8.dp)
                 )
