@@ -7,6 +7,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -18,10 +19,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.SwipeToDismissBox
@@ -31,8 +35,10 @@ import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -222,6 +228,54 @@ class HistoryActivity : AppCompatActivity() {
         itemTouchHelper.attachToRecyclerView(binding.recyclerHistory)
     }
 
+    fun deleteTransaction(tx: Transaction) {
+        historyViewModel.deleteTransaction(tx)
+        Snackbar.make(binding.root, "Deleted: ${tx.description}", Snackbar.LENGTH_LONG)
+            .setAction("UNDO"){
+                // To UNDO, we re-insert the transaction.
+                historyViewModel.logTransaction(
+                    tx.description,
+                    tx.amount,
+                    tx.timestamp
+                )
+                Toast.makeText(this@HistoryActivity, "Transaction restored!", Toast.LENGTH_SHORT).show()
+            }
+            .show()
+
+        Toast.makeText(
+            this@HistoryActivity,
+            "Transaction deleted!",
+            Toast.LENGTH_SHORT
+        ).show()
+    }
+
+    fun toggleRead(tx: Transaction){
+        if (!tx.isRead) { // Only mark as read if it's currently unread
+            historyViewModel.markAsRead(tx)
+            Snackbar.make(
+                binding.root,
+                "${tx.description} marked as read",
+                Snackbar.LENGTH_LONG
+            )
+                .setAction("UNDO") {
+                    historyViewModel.markAsUnread(tx)
+                    // The UI will update automatically due to Flow/LiveData observation
+                }
+                .show()
+        } else {
+            historyViewModel.markAsUnread(tx)
+            Snackbar.make(
+                binding.root,
+                "${tx.description} marked as unread",
+                Snackbar.LENGTH_LONG
+            )
+                .setAction("UNDO") {
+                    historyViewModel.markAsRead(tx)
+                }
+                .show()
+        }// end if-else isRead
+    }
+
     @Composable
     fun TransactionUI(
         transaction: Transaction,
@@ -249,41 +303,60 @@ class HistoryActivity : AppCompatActivity() {
             backgroundContent = {
                 when (swipeToDismissBoxState.dismissDirection) {
                     SwipeToDismissBoxValue.StartToEnd -> {
+                        Icon(
+                            painter = painterResource(if (transaction.isRead) R.drawable.ic_check else R.drawable.ic_launcher_foreground),
+                            contentDescription = if (transaction.isRead) "Mark as unread" else "Mark as read",
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(Color.Blue)
+                                .wrapContentSize(Alignment.CenterStart)
+                                .padding(12.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
                     }
                     SwipeToDismissBoxValue.EndToStart -> {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_delete),
+                            contentDescription = "Remove tx",
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(Color.Red)
+                                .wrapContentSize(Alignment.CenterEnd)
+                                .padding(12.dp),
+
+                        )
                     }
                     SwipeToDismissBoxValue.Settled -> {}
                 }
             }
         ) {
-            Row(Modifier.padding(all = 8.dp)) {
-                Image(
-                    painter = painterResource(R.drawable.ic_launcher_foreground),
-                    "Stock image",
-                    Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        //.border(1.5.dp, MaterialTheme.colorScheme.primary)
-                )
-                Spacer(Modifier.width(8.dp))
-                Column() {
-                    Text(
-                        text = transaction.description,
-                        style = MaterialTheme.typography.labelLarge
-                    )
-                    Text(
-                        text = dateUtils.formatTimestamp(transaction.timestamp),
-                        color = MaterialTheme.colorScheme.secondary,
-                        style = MaterialTheme.typography.titleSmall
-                    )
-                }
-                Text(
+            ListItem(
+                headlineContent = { Text(
+                    transaction.description,
+                    // style = MaterialTheme.typography.labelLarge
+                )},
+                supportingContent = { Text(
+                    dateUtils.formatTimestamp(transaction.timestamp),
+                    color = MaterialTheme.colorScheme.secondary,
+                    style = MaterialTheme.typography.titleSmall
+                )},
+                trailingContent = { Text(
                     transaction.amount.toString(),
                     color = MaterialTheme.colorScheme.tertiary,
-                    modifier = Modifier.padding(start = 16.dp, top = 10.dp),
+                    modifier = Modifier.padding(16.dp),
                     style = MaterialTheme.typography.labelLarge
-                )
-            }
+                )},
+                leadingContent = {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_launcher_foreground),
+                        "Stock image",
+                        Modifier
+                            .size(40.dp)
+                            .clip(CircleShape)
+                        //.border(1.5.dp, MaterialTheme.colorScheme.primary)
+                    )
+                }
+            )
         }
 
     }
@@ -300,8 +373,8 @@ class HistoryActivity : AppCompatActivity() {
             ){ transaction ->
                 TransactionUI(
                     transaction,
-                    onToggleRead = { historyViewModel.markAsRead(it) },
-                    onRemove = { historyViewModel.deleteTransaction(it) },
+                    onToggleRead = { toggleRead(it) },
+                    onRemove = { deleteTransaction(it) },
                     modifier = Modifier.animateItem()
                 )
                 HorizontalDivider(
