@@ -50,7 +50,6 @@ import androidx.compose.ui.unit.dp
 import com.eromn.microfintracker.data.AppDatabase
 import com.eromn.microfintracker.data.Transaction
 import com.eromn.microfintracker.data.TransactionRepository
-import com.eromn.microfintracker.databinding.ActivityHistoryBinding
 import com.eromn.microfintracker.ui.theme.FinTrackTheme
 import com.eromn.microfintracker.utils.DateUtils
 import com.eromn.microfintracker.viewmodel.HistoryViewModel
@@ -60,7 +59,6 @@ import kotlinx.coroutines.launch
 import kotlin.math.abs
 
 class HistoryActivity : AppCompatActivity() {
-    private lateinit var binding: ActivityHistoryBinding
     private val dateUtils = DateUtils()
 
 
