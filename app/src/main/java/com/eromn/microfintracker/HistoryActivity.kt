@@ -62,6 +62,7 @@ import androidx.compose.material3.SwipeToDismissBoxValue.EndToStart
 import androidx.compose.material3.SwipeToDismissBoxValue.Settled
 import androidx.compose.material3.SwipeToDismissBoxValue.StartToEnd
 import androidx.compose.material3.rememberSwipeToDismissBoxState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.text.font.FontWeight
 
 class HistoryActivity : AppCompatActivity() {
@@ -285,22 +286,23 @@ class HistoryActivity : AppCompatActivity() {
     ) {
         // Define the state
         val swipeToDismissBoxState = rememberSwipeToDismissBoxState(
-            initialValue = Settled,
-            confirmValueChange = { dismissValue ->
-                when(dismissValue){
-                    StartToEnd ->{
-                        toggleRead(transaction)
-                        false
-                    }
-                    EndToStart -> {
-                        deleteTransaction(transaction)
-                        true
-                    }
-                    Settled -> false
-                }
-            },
+            confirmValueChange = { true },
             positionalThreshold = { totalDistance -> totalDistance * 0.7f }
         )
+
+        LaunchedEffect(swipeToDismissBoxState.currentValue) {
+            when (swipeToDismissBoxState.currentValue) {
+                StartToEnd -> {
+                    toggleRead(transaction)
+                    // Reset state so it snaps back
+                    swipeToDismissBoxState.snapTo(Settled)
+                }
+                EndToStart -> {
+                    deleteTransaction(transaction)
+                }
+                Settled -> {}
+            }
+        }
 
         SwipeToDismissBox(
             state = swipeToDismissBoxState,
