@@ -10,12 +10,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBars
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -50,8 +47,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import com.eromn.microfintracker.data.AppDatabase
 import com.eromn.microfintracker.data.Transaction
 import com.eromn.microfintracker.data.TransactionRepository
@@ -60,7 +55,6 @@ import com.eromn.microfintracker.ui.theme.FinTrackTheme
 import com.eromn.microfintracker.utils.DateUtils
 import com.eromn.microfintracker.viewmodel.HistoryViewModel
 import com.eromn.microfintracker.viewmodel.HistoryViewModelFactory
-import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlin.math.abs
@@ -68,8 +62,6 @@ import kotlin.math.abs
 class HistoryActivity : AppCompatActivity() {
     private lateinit var binding: ActivityHistoryBinding
     private val dateUtils = DateUtils()
-    private lateinit var snackbarHostState: SnackbarHostState
-    private lateinit var scope: CoroutineScope
 
 
     private val historyViewModel: HistoryViewModel by viewModels {
@@ -86,8 +78,8 @@ class HistoryActivity : AppCompatActivity() {
             // Retrieve transactions from db
             val transactions by historyViewModel.allTransactions.collectAsState(initial = emptyList())
 
-            snackbarHostState = remember { SnackbarHostState() }
-            scope = rememberCoroutineScope()
+            val snackbarHostState = remember { SnackbarHostState() }
+            val scope = rememberCoroutineScope()
 
             FinTrackTheme() {
                 Scaffold(
@@ -97,12 +89,13 @@ class HistoryActivity : AppCompatActivity() {
                     Surface(
                         modifier = Modifier
                             .padding(innerPadding)
-                            .padding( horizontal=16.dp ),
+                            .padding(horizontal = 16.dp),
                         color = MaterialTheme.colorScheme.background
                     ) {
                         MainCanvas(
                             txs = transactions,
-
+                            scope,
+                            snackbarHostState
                         )
                     }// end Surface
                 }// end Saffold
@@ -112,7 +105,11 @@ class HistoryActivity : AppCompatActivity() {
 
     }
 
-    fun deleteTransaction(tx: Transaction) {
+    fun deleteTransaction(
+        tx: Transaction,
+        scope: CoroutineScope,
+        snackbarHostState: SnackbarHostState
+    ) {
         historyViewModel.deleteTransaction(tx)
         scope.launch {
             val result = snackbarHostState.showSnackbar(
@@ -142,6 +139,8 @@ class HistoryActivity : AppCompatActivity() {
     @Composable
     fun TransactionUI(
         transaction: Transaction,
+        scope: CoroutineScope,
+        snackbarHostState: SnackbarHostState,
         modifier: Modifier = Modifier,
     ) {
         // Define the state
@@ -158,7 +157,7 @@ class HistoryActivity : AppCompatActivity() {
                     swipeToDismissBoxState.snapTo(Settled)
                 }
                 EndToStart -> {
-                    deleteTransaction(transaction)
+                    deleteTransaction(transaction, scope, snackbarHostState)
                 }
                 Settled -> {}
             }
@@ -239,7 +238,11 @@ class HistoryActivity : AppCompatActivity() {
     }
 
     @Composable
-    fun TxHistory(txs: List<Transaction>){
+    fun TxHistory(
+        txs: List<Transaction>,
+        scope: CoroutineScope,
+        snackbarHostState: SnackbarHostState
+    ){
         LazyColumn (
             modifier = Modifier
                 .fillMaxSize(),
@@ -251,7 +254,9 @@ class HistoryActivity : AppCompatActivity() {
             ){ transaction ->
                 TransactionUI(
                     transaction,
-                    modifier = Modifier.animateItem()
+                    scope,
+                    snackbarHostState,
+                    modifier = Modifier.animateItem(),
                 )
                 HorizontalDivider(
                     modifier = Modifier.padding(vertical = 8.dp)
@@ -261,8 +266,12 @@ class HistoryActivity : AppCompatActivity() {
     }
 
     @Composable
-    fun MainCanvas(txs: List<Transaction>){
-        TxHistory(txs)
+    fun MainCanvas(
+        txs: List<Transaction>,
+        scope: CoroutineScope,
+        snackbarHostState: SnackbarHostState
+    ){
+        TxHistory(txs, scope, snackbarHostState)
     }
 
     @Preview(showBackground = true)
@@ -275,7 +284,7 @@ class HistoryActivity : AppCompatActivity() {
         )
 
         FinTrackTheme() {
-            MainCanvas(samples)
+            MainCanvas(samples, rememberCoroutineScope(), remember { SnackbarHostState() } )
         }
     }
 
