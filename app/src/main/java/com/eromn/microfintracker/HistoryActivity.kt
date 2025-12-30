@@ -6,6 +6,11 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -15,7 +20,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
@@ -37,6 +44,7 @@ import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -77,6 +85,13 @@ class HistoryActivity : AppCompatActivity() {
         setContent {
             // Retrieve transactions from db
             val transactions by historyViewModel.groupedTransactions.collectAsState(emptyMap())
+            // for adding button hide
+            val listState = rememberLazyListState()
+            val isFabVisible by remember {
+                derivedStateOf {
+                    !listState.isScrollInProgress || listState.firstVisibleItemIndex == 0
+                }
+            }
 
             val snackbarHostState = remember { SnackbarHostState() }
             val scope = rememberCoroutineScope()
@@ -85,18 +100,25 @@ class HistoryActivity : AppCompatActivity() {
                 Scaffold(
                     snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
                     floatingActionButton = {
-                        FloatingActionButton(
-                            onClick = {
-
-                            },
-                            containerColor = MaterialTheme.colorScheme.primaryContainer,
-                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        AnimatedVisibility(
+                            visible = isFabVisible,
+                            enter = scaleIn() + fadeIn(),
+                            exit = scaleOut() + fadeOut()
                         ) {
-                            Icon(
-                                painter = painterResource(id = android.R.drawable.ic_input_add),
-                                contentDescription = "Agregar transacción"
-                            )
+                            FloatingActionButton(
+                                onClick = {
+
+                                },
+                                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = android.R.drawable.ic_input_add),
+                                    contentDescription = "Agregar transacción"
+                                )
+                            }
                         }
+
                     },
                     modifier = Modifier.fillMaxSize()
                 ) { innerPadding ->
@@ -109,7 +131,8 @@ class HistoryActivity : AppCompatActivity() {
                         MainCanvas(
                             transactions,
                             scope,
-                            snackbarHostState
+                            snackbarHostState,
+                            listState
                         )
                     }// end Surface
                 }// end Saffold
@@ -255,9 +278,11 @@ class HistoryActivity : AppCompatActivity() {
     fun TxHistory(
         txsByDate: Map<String, List<Transaction>>,
         scope: CoroutineScope,
-        snackbarHostState: SnackbarHostState
+        snackbarHostState: SnackbarHostState,
+        listState: LazyListState
     ){
         LazyColumn (
+            state = listState,
             modifier = Modifier
         ) {
             txsByDate.forEach { (dateHeader, transactions) ->
@@ -303,9 +328,10 @@ class HistoryActivity : AppCompatActivity() {
     fun MainCanvas(
         txsByDate: Map<String, List<Transaction>>,
         scope: CoroutineScope,
-        snackbarHostState: SnackbarHostState
+        snackbarHostState: SnackbarHostState,
+        listState: LazyListState
     ){
-        TxHistory(txsByDate, scope, snackbarHostState)
+        TxHistory(txsByDate, scope, snackbarHostState, listState)
     }
 
     @Preview(showBackground = true)
@@ -326,7 +352,12 @@ class HistoryActivity : AppCompatActivity() {
         )
 
         FinTrackTheme() {
-            MainCanvas(dummyGrouped, rememberCoroutineScope(), remember { SnackbarHostState() } )
+            MainCanvas(
+                dummyGrouped,
+                rememberCoroutineScope(),
+                remember { SnackbarHostState() },
+                rememberLazyListState()
+            )
         }
     }
 
