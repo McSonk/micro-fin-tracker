@@ -62,6 +62,7 @@ import androidx.compose.material3.SwipeToDismissBoxValue.EndToStart
 import androidx.compose.material3.SwipeToDismissBoxValue.Settled
 import androidx.compose.material3.SwipeToDismissBoxValue.StartToEnd
 import androidx.compose.material3.rememberSwipeToDismissBoxState
+import androidx.compose.ui.text.font.FontWeight
 
 class HistoryActivity : AppCompatActivity() {
     private lateinit var binding: ActivityHistoryBinding
@@ -286,13 +287,19 @@ class HistoryActivity : AppCompatActivity() {
         val swipeToDismissBoxState = rememberSwipeToDismissBoxState(
             initialValue = Settled,
             confirmValueChange = { dismissValue ->
-                if (dismissValue == StartToEnd) toggleRead(transaction)
-                else if (dismissValue == EndToStart) deleteTransaction(transaction)
-
-                // Reset item when toggling done status
-                dismissValue != StartToEnd
+                when(dismissValue){
+                    StartToEnd ->{
+                        toggleRead(transaction)
+                        false
+                    }
+                    EndToStart -> {
+                        deleteTransaction(transaction)
+                        true
+                    }
+                    Settled -> false
+                }
             },
-
+            positionalThreshold = { totalDistance -> totalDistance * 0.7f }
         )
 
         SwipeToDismissBox(
@@ -306,6 +313,7 @@ class HistoryActivity : AppCompatActivity() {
                             painter = painterResource(if (transaction.isRead) R.drawable.ic_check else R.drawable.ic_launcher_foreground),
                             contentDescription = if (transaction.isRead) "Mark as unread" else "Mark as read",
                             modifier = Modifier
+                                .fillMaxSize()
                                 .drawBehind {
                                     drawRect(
                                         lerp(
@@ -345,7 +353,8 @@ class HistoryActivity : AppCompatActivity() {
             ListItem(
                 headlineContent = { Text(
                     transaction.description,
-                    // style = MaterialTheme.typography.labelLarge
+                    color = if (transaction.isRead) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.primary,
+                    fontWeight = if (transaction.isRead) FontWeight.Light else FontWeight.ExtraBold
                 )},
                 supportingContent = { Text(
                     dateUtils.formatTimestamp(transaction.timestamp),
@@ -404,9 +413,9 @@ class HistoryActivity : AppCompatActivity() {
     @Composable
     fun Preview(){
         val samples = listOf(
-            Transaction(0, "uBike", 10.0, 1234567890),
-            Transaction(2, "MRT", 20.0, 1234567890),
-            Transaction(3, "Señora pancakes", 50.0, 1234567890)
+            Transaction(0, "uBike", 10.0, 1234567890, isRead = false),
+            Transaction(2, "MRT", 20.0, 1234567890, isRead = true),
+            Transaction(3, "Señora pancakes", 50.0, 1234567890, isRead = false)
         )
 
         FinTrackTheme() {
