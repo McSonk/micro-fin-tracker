@@ -7,6 +7,8 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,8 +27,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
+import androidx.compose.material3.SwipeToDismissBoxValue.EndToStart
+import androidx.compose.material3.SwipeToDismissBoxValue.Settled
+import androidx.compose.material3.SwipeToDismissBoxValue.StartToEnd
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -36,6 +43,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
@@ -57,13 +65,7 @@ import com.google.android.material.snackbar.Snackbar
 import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import androidx.compose.material3.SwipeToDismissBox
-import androidx.compose.material3.SwipeToDismissBoxValue.EndToStart
-import androidx.compose.material3.SwipeToDismissBoxValue.Settled
-import androidx.compose.material3.SwipeToDismissBoxValue.StartToEnd
-import androidx.compose.material3.rememberSwipeToDismissBoxState
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.text.font.FontWeight
+import kotlin.math.abs
 
 class HistoryActivity : AppCompatActivity() {
     private lateinit var binding: ActivityHistoryBinding
@@ -304,84 +306,76 @@ class HistoryActivity : AppCompatActivity() {
             }
         }
 
-        SwipeToDismissBox(
-            state = swipeToDismissBoxState,
-            modifier = modifier,
-            backgroundContent = {
-                // dismissDirection = When the swipe is in progress
-                when (swipeToDismissBoxState.dismissDirection) {
-                    StartToEnd -> {
-                        Icon(
-                            painter = painterResource(if (transaction.isRead) R.drawable.ic_check else R.drawable.ic_launcher_foreground),
-                            contentDescription = if (transaction.isRead) "Mark as unread" else "Mark as read",
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .drawBehind {
-                                    drawRect(
-                                        lerp(
-                                            Color.LightGray,
-                                            Color.Blue,
-                                            swipeToDismissBoxState.progress
-                                        )
-                                    )
-                                }
-                                .wrapContentSize(Alignment.CenterStart)
-                                .padding(12.dp),
-                            tint = Color.White
-                        )
-                    }
-                    SwipeToDismissBoxValue.EndToStart -> {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_delete),
-                            contentDescription = "Remove tx",
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .background(
-                                    lerp(
-                                        Color.LightGray,
-                                        Color.Red,
-                                        swipeToDismissBoxState.progress
-                                    )
-                                )
-                                .wrapContentSize(Alignment.CenterEnd)
-                                .padding(12.dp),
-                            tint = Color.White
-                        )
-                    }
-                    Settled -> {}
-                }
-            }
-        ) {
-            ListItem(
-                headlineContent = { Text(
-                    transaction.description,
-                    color = if (transaction.isRead) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.primary,
-                    fontWeight = if (transaction.isRead) FontWeight.Light else FontWeight.ExtraBold
-                )},
-                supportingContent = { Text(
-                    dateUtils.formatTimestamp(transaction.timestamp),
-                    color = MaterialTheme.colorScheme.secondary,
-                    style = MaterialTheme.typography.titleSmall
-                )},
-                trailingContent = { Text(
-                    transaction.amount.toString(),
-                    color = MaterialTheme.colorScheme.tertiary,
-                    modifier = Modifier.padding(16.dp),
-                    style = MaterialTheme.typography.labelLarge
-                )},
-                leadingContent = {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_launcher_foreground),
-                        "Stock image",
-                        Modifier
-                            .size(40.dp)
-                            .clip(CircleShape)
-                        //.border(1.5.dp, MaterialTheme.colorScheme.primary)
-                    )
-                }
-            )
-        }
+        BoxWithConstraints(modifier = modifier) {
+            val width = constraints.maxWidth.toFloat()
 
+            val offset = try{ swipeToDismissBoxState.requireOffset() } catch (e: Exception){ 0f }
+            val fraction = (abs(offset) / width).coerceIn(0f, 1f)
+
+            SwipeToDismissBox(
+                state = swipeToDismissBoxState,
+                backgroundContent = {
+                    val direction = swipeToDismissBoxState.dismissDirection
+
+                    //determine colour based on direction and custom fraction
+                    val backgroundColour = when (direction) {
+                        StartToEnd -> lerp(Color.LightGray, Color.Blue, fraction)
+                        EndToStart -> lerp(Color.LightGray, Color.Red, fraction)
+                        else -> Color.Transparent
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(backgroundColour)
+                            .padding(horizontal = 20.dp),
+                        contentAlignment = if (direction == StartToEnd) Alignment.CenterStart else Alignment.CenterEnd
+                    ) {
+                        val icon = when (direction) {
+                            StartToEnd -> if (transaction.isRead) R.drawable.ic_check else R.drawable.ic_launcher_foreground
+                            EndToStart -> R.drawable.ic_delete
+                            else -> null
+                        }
+                        icon?.let {
+                            Icon(
+                                painter = painterResource(it),
+                                contentDescription = null,
+                                tint = Color.White
+                            )
+                        }
+                    }
+                }
+            ) {
+                ListItem(
+                    headlineContent = { Text(
+                        transaction.description,
+                        color = if (transaction.isRead) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.primary,
+                        fontWeight = if (transaction.isRead) FontWeight.Light else FontWeight.ExtraBold
+                    )},
+                    supportingContent = { Text(
+                        dateUtils.formatTimestamp(transaction.timestamp),
+                        color = MaterialTheme.colorScheme.secondary,
+                        style = MaterialTheme.typography.titleSmall
+                    )},
+                    trailingContent = { Text(
+                        transaction.amount.toString(),
+                        color = MaterialTheme.colorScheme.tertiary,
+                        modifier = Modifier.padding(16.dp),
+                        style = MaterialTheme.typography.labelLarge
+                    )},
+                    leadingContent = {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_launcher_foreground),
+                            "Stock image",
+                            Modifier
+                                .size(40.dp)
+                                .clip(CircleShape)
+                            //.border(1.5.dp, MaterialTheme.colorScheme.primary)
+                        )
+                    }
+                )
+            }
+        }
     }
 
     @Composable
