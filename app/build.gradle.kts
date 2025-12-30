@@ -49,10 +49,13 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
+    // implementation(libs.material3)
     //***** Compose....
-    val composeBom = platform("androidx.compose:compose-bom:2025.12.00")
+    val composeBom = platform(libs.androidx.compose.bom)
     implementation(composeBom)
     androidTestImplementation(composeBom)
+
+    // compose bom-related
     implementation(libs.androidx.material3)
     // Android Studio Preview support
     implementation(libs.androidx.ui.tooling.preview)

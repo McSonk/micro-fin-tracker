@@ -12,23 +12,37 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.BottomSheetDefaults
+import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
@@ -40,12 +54,14 @@ import androidx.compose.material3.SwipeToDismissBoxValue.EndToStart
 import androidx.compose.material3.SwipeToDismissBoxValue.Settled
 import androidx.compose.material3.SwipeToDismissBoxValue.StartToEnd
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -55,6 +71,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.eromn.microfintracker.data.AppDatabase
@@ -67,6 +84,8 @@ import com.eromn.microfintracker.viewmodel.HistoryViewModelFactory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlin.math.abs
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 
 class HistoryActivity : AppCompatActivity() {
     private val dateUtils = DateUtils()
@@ -85,13 +104,16 @@ class HistoryActivity : AppCompatActivity() {
         setContent {
             // Retrieve transactions from db
             val transactions by historyViewModel.groupedTransactions.collectAsState(emptyMap())
-            // for adding button hide
+            // for FAB button hide
             val listState = rememberLazyListState()
             val isFabVisible by remember {
                 derivedStateOf {
                     !listState.isScrollInProgress || listState.firstVisibleItemIndex == 0
                 }
             }
+
+            // for the modal state
+            var showSheet by remember { mutableStateOf(false) }
 
             val snackbarHostState = remember { SnackbarHostState() }
             val scope = rememberCoroutineScope()
@@ -107,7 +129,7 @@ class HistoryActivity : AppCompatActivity() {
                         ) {
                             FloatingActionButton(
                                 onClick = {
-
+                                    showSheet = true
                                 },
                                 containerColor = MaterialTheme.colorScheme.primaryContainer,
                                 contentColor = MaterialTheme.colorScheme.onPrimaryContainer
@@ -134,6 +156,16 @@ class HistoryActivity : AppCompatActivity() {
                             snackbarHostState,
                             listState
                         )
+
+                        if (showSheet) {
+                            AddTransactionSheet(
+                                onDismiss = { showSheet = false },
+                                onSave = { desc, amount ->
+                                    historyViewModel.logTransaction(desc, amount)
+                                    showSheet = false
+                                }
+                            )
+                        }
                     }// end Surface
                 }// end Saffold
 
@@ -332,6 +364,78 @@ class HistoryActivity : AppCompatActivity() {
         listState: LazyListState
     ){
         TxHistory(txsByDate, scope, snackbarHostState, listState)
+    }
+
+
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    fun AddTransactionSheet(
+        onDismiss: () -> Unit,
+        onSave: (String, Double) -> Unit
+    ) {
+        val sheetState = rememberModalBottomSheetState()
+        var description by remember { mutableStateOf("") }
+        var amount by remember { mutableStateOf("") }
+
+        ModalBottomSheet(
+            onDismissRequest = onDismiss,
+            sheetState = sheetState,
+            contentWindowInsets = { WindowInsets.ime }
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(24.dp)
+                    .fillMaxWidth()
+                    .padding(bottom = 32.dp) // Extra space at bottom
+            ) {
+                Text(
+                    text = "Agregar Gasto",
+                    style = MaterialTheme.typography.headlineSmall,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+
+                OutlinedTextField(
+                    value = description,
+                    onValueChange = { description = it },
+                    label = { Text("Descripción") },
+                    modifier = Modifier.fillMaxWidth(),
+                    maxLines = 3
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                OutlinedTextField(
+                    value = amount,
+                    onValueChange = { amount = it },
+                    label = { Text("Monto") },
+                    modifier = Modifier.fillMaxWidth(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                    singleLine = true
+                )
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 24.dp),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    OutlinedButton(onClick = onDismiss) {
+                        Text("Cancelar")
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Button(
+                        onClick = {
+                            val amountDouble = amount.toDoubleOrNull() ?: 0.0
+                            if (description.isNotBlank() && amountDouble > 0) {
+                                onSave(description, amountDouble)
+                            }
+                        }
+                    ) {
+                        Text("Agregar")
+                    }
+                }
+            }
+        }
     }
 
     @Preview(showBackground = true)
