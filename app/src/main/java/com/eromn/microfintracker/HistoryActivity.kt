@@ -310,7 +310,8 @@ class HistoryActivity : AppCompatActivity() {
             val width = constraints.maxWidth.toFloat()
 
             val offset = try{ swipeToDismissBoxState.requireOffset() } catch (e: Exception){ 0f }
-            val fraction = (abs(offset) / width).coerceIn(0f, 1f)
+            val threshold = 0.5f
+            val fraction = (abs(offset) / (width * threshold)).coerceIn(0f, 1f)
 
             SwipeToDismissBox(
                 state = swipeToDismissBoxState,
@@ -319,8 +320,8 @@ class HistoryActivity : AppCompatActivity() {
 
                     //determine colour based on direction and custom fraction
                     val backgroundColour = when (direction) {
-                        StartToEnd -> lerp(Color.LightGray, Color.Blue, fraction)
-                        EndToStart -> lerp(Color.LightGray, Color.Red, fraction)
+                        StartToEnd -> lerp(Color.LightGray, MaterialTheme.colorScheme.primaryContainer, fraction)
+                        EndToStart -> lerp(Color.LightGray, MaterialTheme.colorScheme.errorContainer, fraction)
                         else -> Color.Transparent
                     }
 
@@ -340,7 +341,7 @@ class HistoryActivity : AppCompatActivity() {
                             Icon(
                                 painter = painterResource(it),
                                 contentDescription = null,
-                                tint = Color.White
+                                tint = MaterialTheme.colorScheme.onPrimaryContainer
                             )
                         }
                     }
@@ -354,7 +355,8 @@ class HistoryActivity : AppCompatActivity() {
                     )},
                     supportingContent = { Text(
                         dateUtils.formatTimestamp(transaction.timestamp),
-                        color = MaterialTheme.colorScheme.secondary,
+                        color = if (transaction.isRead) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.secondary,
+                        fontWeight = if (transaction.isRead) FontWeight.ExtraLight else FontWeight.Medium,
                         style = MaterialTheme.typography.titleSmall
                     )},
                     trailingContent = { Text(
