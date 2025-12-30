@@ -6,18 +6,13 @@ import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
@@ -31,14 +26,15 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -58,9 +54,14 @@ import com.eromn.microfintracker.utils.DateUtils
 import com.eromn.microfintracker.viewmodel.HistoryViewModel
 import com.eromn.microfintracker.viewmodel.HistoryViewModelFactory
 import com.google.android.material.snackbar.Snackbar
+import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxValue.EndToStart
+import androidx.compose.material3.SwipeToDismissBoxValue.Settled
+import androidx.compose.material3.SwipeToDismissBoxValue.StartToEnd
+import androidx.compose.material3.rememberSwipeToDismissBoxState
 
 class HistoryActivity : AppCompatActivity() {
     private lateinit var binding: ActivityHistoryBinding
@@ -249,7 +250,7 @@ class HistoryActivity : AppCompatActivity() {
         ).show()
     }
 
-    fun toggleRead(tx: Transaction){
+    fun toggleRead(tx: Transaction) {
         if (!tx.isRead) { // Only mark as read if it's currently unread
             historyViewModel.markAsRead(tx)
             Snackbar.make(
@@ -279,39 +280,44 @@ class HistoryActivity : AppCompatActivity() {
     @Composable
     fun TransactionUI(
         transaction: Transaction,
-        onToggleRead: (Transaction) -> Unit,
-        onRemove: (Transaction) -> Unit,
         modifier: Modifier = Modifier,
     ) {
         // Define the state
         val swipeToDismissBoxState = rememberSwipeToDismissBoxState(
-            confirmValueChange = {
-                if (it == SwipeToDismissBoxValue.StartToEnd) {
-                    onToggleRead(transaction)
-                }
-                else if (it == SwipeToDismissBoxValue.EndToStart) {
-                    onRemove(transaction)
-                }
-                // Reset item when toggling done status (return to the callback)
-                it != SwipeToDismissBoxValue.StartToEnd
-            }
+            initialValue = Settled,
+            confirmValueChange = { dismissValue ->
+                if (dismissValue == StartToEnd) toggleRead(transaction)
+                else if (dismissValue == EndToStart) deleteTransaction(transaction)
+
+                // Reset item when toggling done status
+                dismissValue != StartToEnd
+            },
+
         )
 
         SwipeToDismissBox(
             state = swipeToDismissBoxState,
-            modifier = modifier.fillMaxSize(),
+            modifier = modifier,
             backgroundContent = {
+                // dismissDirection = When the swipe is in progress
                 when (swipeToDismissBoxState.dismissDirection) {
-                    SwipeToDismissBoxValue.StartToEnd -> {
+                    StartToEnd -> {
                         Icon(
                             painter = painterResource(if (transaction.isRead) R.drawable.ic_check else R.drawable.ic_launcher_foreground),
                             contentDescription = if (transaction.isRead) "Mark as unread" else "Mark as read",
                             modifier = Modifier
-                                .fillMaxSize()
-                                .background(Color.Blue)
+                                .drawBehind {
+                                    drawRect(
+                                        lerp(
+                                            Color.LightGray,
+                                            Color.Blue,
+                                            swipeToDismissBoxState.progress
+                                        )
+                                    )
+                                }
                                 .wrapContentSize(Alignment.CenterStart)
                                 .padding(12.dp),
-                            tint = MaterialTheme.colorScheme.primary
+                            tint = Color.White
                         )
                     }
                     SwipeToDismissBoxValue.EndToStart -> {
@@ -320,13 +326,19 @@ class HistoryActivity : AppCompatActivity() {
                             contentDescription = "Remove tx",
                             modifier = Modifier
                                 .fillMaxSize()
-                                .background(Color.Red)
+                                .background(
+                                    lerp(
+                                        Color.LightGray,
+                                        Color.Red,
+                                        swipeToDismissBoxState.progress
+                                    )
+                                )
                                 .wrapContentSize(Alignment.CenterEnd)
                                 .padding(12.dp),
-
+                            tint = Color.White
                         )
                     }
-                    SwipeToDismissBoxValue.Settled -> {}
+                    Settled -> {}
                 }
             }
         ) {
@@ -365,7 +377,8 @@ class HistoryActivity : AppCompatActivity() {
     fun TxHistory(txs: List<Transaction>){
         LazyColumn (
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxSize(),
+            contentPadding = PaddingValues(horizontal = 16.dp)
         ) {
             items(
                 items = txs,
@@ -373,8 +386,6 @@ class HistoryActivity : AppCompatActivity() {
             ){ transaction ->
                 TransactionUI(
                     transaction,
-                    onToggleRead = { toggleRead(it) },
-                    onRemove = { deleteTransaction(it) },
                     modifier = Modifier.animateItem()
                 )
                 HorizontalDivider(
