@@ -5,12 +5,20 @@ import androidx.lifecycle.ViewModelProvider
 import com.eromn.microfintracker.data.Transaction
 import androidx.lifecycle.viewModelScope
 import com.eromn.microfintracker.data.TransactionRepository
+import com.eromn.microfintracker.utils.DateUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 class HistoryViewModel(private val repository: TransactionRepository) : ViewModel() {
     val allTransactions: Flow<List<Transaction>> = repository.allTransactions
+    val groupedTransactions: Flow<Map<String, List<Transaction>>> = allTransactions
+        .map { list->
+            list.groupBy { DateUtils().formatHeaderDate(it.timestamp) }
+        }
+        .flowOn(Dispatchers.Default)
 
     fun logTransaction(
         description: String,

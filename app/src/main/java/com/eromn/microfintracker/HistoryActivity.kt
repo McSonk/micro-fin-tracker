@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -74,7 +75,7 @@ class HistoryActivity : AppCompatActivity() {
 
         setContent {
             // Retrieve transactions from db
-            val transactions by historyViewModel.allTransactions.collectAsState(initial = emptyList())
+            val transactions by historyViewModel.groupedTransactions.collectAsState(emptyMap())
 
             val snackbarHostState = remember { SnackbarHostState() }
             val scope = rememberCoroutineScope()
@@ -91,7 +92,7 @@ class HistoryActivity : AppCompatActivity() {
                         color = MaterialTheme.colorScheme.background
                     ) {
                         MainCanvas(
-                            txs = transactions,
+                            transactions,
                             scope,
                             snackbarHostState
                         )
@@ -237,52 +238,80 @@ class HistoryActivity : AppCompatActivity() {
 
     @Composable
     fun TxHistory(
-        txs: List<Transaction>,
+        txsByDate: Map<String, List<Transaction>>,
         scope: CoroutineScope,
         snackbarHostState: SnackbarHostState
     ){
         LazyColumn (
             modifier = Modifier
-                .fillMaxSize(),
-            contentPadding = PaddingValues(horizontal = 16.dp)
         ) {
-            items(
-                items = txs,
-                key = { it.id }
-            ){ transaction ->
-                TransactionUI(
-                    transaction,
-                    scope,
-                    snackbarHostState,
-                    modifier = Modifier.animateItem(),
-                )
-                HorizontalDivider(
-                    modifier = Modifier.padding(vertical = 8.dp)
-                )
-            }
+            txsByDate.forEach { (dateHeader, transactions) ->
+                stickyHeader (key = dateHeader) {
+                    Surface(
+                        modifier = Modifier.fillMaxWidth(),
+                        color = MaterialTheme.colorScheme.surfaceVariant
+                    ) {
+                        Text(
+                            text = dateHeader,
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }// end stickyHeader
+
+                items(
+                    items = transactions,
+                    key = { it.id }
+                ){ transaction ->
+                    TransactionUI(
+                        transaction,
+                        scope,
+                        snackbarHostState,
+                        modifier = Modifier
+                            .animateItem()
+                            .padding(horizontal = 16.dp)
+                    )
+                    if (transaction != transactions.last() ){
+                        HorizontalDivider(
+                            modifier = Modifier.padding(vertical = 8.dp)
+                        )
+                    }
+                } // end items
+
+            }// end forEach
         }
     }
 
     @Composable
     fun MainCanvas(
-        txs: List<Transaction>,
+        txsByDate: Map<String, List<Transaction>>,
         scope: CoroutineScope,
         snackbarHostState: SnackbarHostState
     ){
-        TxHistory(txs, scope, snackbarHostState)
+        TxHistory(txsByDate, scope, snackbarHostState)
     }
 
     @Preview(showBackground = true)
     @Composable
     fun Preview(){
-        val samples = listOf(
-            Transaction(0, "uBike", 10.0, 1234567890, isRead = false),
-            Transaction(2, "MRT", 20.0, 1234567890, isRead = true),
-            Transaction(3, "Señora pancakes", 50.0, 1234567890, isRead = false)
+        val dummyGrouped = mapOf(
+            "Hoy" to listOf(
+                Transaction(0, "uBike", 10.0, 1234567890, isRead = false),
+                Transaction(1, "Oxxo", 55.5, 1234567891, isRead = false)
+            ),
+            "Ayer" to listOf(
+                Transaction(2, "MRT", 20.0, 1234567890, isRead = true)
+            ),
+            "25 de Diciembre" to listOf(
+                Transaction(3, "Señora pancakes", 50.0, 1234567890, isRead = false),
+                Transaction(4, "Cena Navidad", 500.0, 1234567890, isRead = true)
+            )
         )
 
         FinTrackTheme() {
-            MainCanvas(samples, rememberCoroutineScope(), remember { SnackbarHostState() } )
+            MainCanvas(dummyGrouped, rememberCoroutineScope(), remember { SnackbarHostState() } )
         }
     }
 
