@@ -23,6 +23,11 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue.EndToStart
@@ -34,6 +39,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -54,11 +61,16 @@ import com.eromn.microfintracker.utils.DateUtils
 import com.eromn.microfintracker.viewmodel.HistoryViewModel
 import com.eromn.microfintracker.viewmodel.HistoryViewModelFactory
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import kotlin.math.abs
 
 class HistoryActivity : AppCompatActivity() {
     private lateinit var binding: ActivityHistoryBinding
     private val dateUtils = DateUtils()
+    private lateinit var snackbarHostState: SnackbarHostState
+    private lateinit var scope: CoroutineScope
+
 
     private val historyViewModel: HistoryViewModel by viewModels {
         HistoryViewModelFactory(
@@ -73,16 +85,28 @@ class HistoryActivity : AppCompatActivity() {
         setContent {
             // Retrieve transactions from db
             val transactions by historyViewModel.allTransactions.collectAsState(initial = emptyList())
+
+            snackbarHostState = remember { SnackbarHostState() }
+            scope = rememberCoroutineScope()
+
             FinTrackTheme() {
-                Surface(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .windowInsetsPadding(WindowInsets.systemBars) // handle system bars
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    MainCanvas(transactions)
-                }
+                Scaffold(
+                    snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+                    modifier = Modifier.fillMaxSize()
+                ) { innerPadding ->
+                    Surface(
+                        modifier = Modifier
+                            .padding(innerPadding)
+                            .padding( horizontal=16.dp ),
+                        color = MaterialTheme.colorScheme.background
+                    ) {
+                        MainCanvas(
+                            txs = transactions,
+
+                        )
+                    }// end Surface
+                }// end Saffold
+
             }
         }
 
@@ -90,9 +114,13 @@ class HistoryActivity : AppCompatActivity() {
 
     fun deleteTransaction(tx: Transaction) {
         historyViewModel.deleteTransaction(tx)
-        Snackbar.make(binding.root, "Deleted: ${tx.description}", Snackbar.LENGTH_LONG)
-            .setAction("UNDO"){
-                // To UNDO, we re-insert the transaction.
+        scope.launch {
+            val result = snackbarHostState.showSnackbar(
+                message = "Deleted: ${tx.description}",
+                actionLabel = "UNDO",
+                duration = SnackbarDuration.Long
+            )
+            if (result == SnackbarResult.ActionPerformed) {
                 historyViewModel.logTransaction(
                     tx.description,
                     tx.amount,
@@ -100,39 +128,14 @@ class HistoryActivity : AppCompatActivity() {
                 )
                 Toast.makeText(this@HistoryActivity, "Transaction restored!", Toast.LENGTH_SHORT).show()
             }
-            .show()
-
-        Toast.makeText(
-            this@HistoryActivity,
-            "Transaction deleted!",
-            Toast.LENGTH_SHORT
-        ).show()
+        }
     }
 
     fun toggleRead(tx: Transaction) {
         if (!tx.isRead) { // Only mark as read if it's currently unread
             historyViewModel.markAsRead(tx)
-            Snackbar.make(
-                binding.root,
-                "${tx.description} marked as read",
-                Snackbar.LENGTH_LONG
-            )
-                .setAction("UNDO") {
-                    historyViewModel.markAsUnread(tx)
-                    // The UI will update automatically due to Flow/LiveData observation
-                }
-                .show()
         } else {
             historyViewModel.markAsUnread(tx)
-            Snackbar.make(
-                binding.root,
-                "${tx.description} marked as unread",
-                Snackbar.LENGTH_LONG
-            )
-                .setAction("UNDO") {
-                    historyViewModel.markAsRead(tx)
-                }
-                .show()
         }// end if-else isRead
     }
 
