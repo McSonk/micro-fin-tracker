@@ -36,6 +36,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DatePickerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
@@ -62,6 +63,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -369,6 +371,104 @@ class HistoryActivity : AppCompatActivity() {
         TxHistory(txsByDate, scope, snackbarHostState, listState)
     }
 
+    // Externalise component so we can preview it
+    @Composable
+    fun AddtransactionForm(
+        dateTextValue: String,
+        onDismiss: () -> Unit,
+        launchDatePicker: () -> Unit,
+        datePickerState: DatePickerState,
+        onSave: (String, Double, Long) -> Unit
+    ) {
+        var description by remember { mutableStateOf("") }
+        var amount by remember { mutableStateOf("") }
+
+        Column(
+            modifier = Modifier
+                .padding(24.dp)
+                .fillMaxWidth()
+                .padding(bottom = 32.dp) // Extra space at bottom
+        ) {
+            Text(
+                text = "Agregar Gasto",
+                style = MaterialTheme.typography.headlineSmall,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+
+            OutlinedTextField(
+                value = description,
+                onValueChange = { description = it },
+                label = { Text("Descripción") },
+                modifier = Modifier.fillMaxWidth(),
+                maxLines = 3
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            OutlinedTextField(
+                value = amount,
+                onValueChange = { amount = it },
+                label = { Text("Monto") },
+                modifier = Modifier.fillMaxWidth(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                singleLine = true
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { launchDatePicker() }
+            ) {
+                OutlinedTextField(
+                    value = dateTextValue,
+                    onValueChange = {},
+                    label = { Text("Fecha") },
+                    modifier = Modifier.fillMaxWidth(),
+                    readOnly = true,
+                    enabled = false, // Prevents keyboard focus
+                    leadingIcon = {
+                        Icon(
+                            painter = painterResource(id = android.R.drawable.ic_menu_my_calendar),
+                            contentDescription = null
+                        )
+                    },
+                    // We override the colors so it doesn't look "greyed out"
+                    colors = OutlinedTextFieldDefaults.colors(
+                        disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                        disabledBorderColor = MaterialTheme.colorScheme.outline,
+                        disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        disabledLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                )
+            }
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 24.dp),
+                horizontalArrangement = Arrangement.End
+            ) {
+                OutlinedButton(onClick = onDismiss) {
+                    Text("Cancelar")
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                Button(
+                    onClick = {
+                        val amountDouble = amount.toDoubleOrNull() ?: 0.0
+                        val selectedMillis = datePickerState.selectedDateMillis ?: System.currentTimeMillis()
+                        if (description.isNotBlank() && amountDouble > 0) {
+                            onSave(description, amountDouble, selectedMillis)
+                        }
+                    }
+                ) {
+                    Text("Agregar")
+                }
+            }
+        }// end Column
+    }
+
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
@@ -379,9 +479,6 @@ class HistoryActivity : AppCompatActivity() {
         val sheetState = rememberModalBottomSheetState(
             skipPartiallyExpanded = true
         )
-        var description by remember { mutableStateOf("") }
-        var amount by remember { mutableStateOf("") }
-
         // date stuff
         var showDatePicker by remember { mutableStateOf(false) }
         val datePickerState = rememberDatePickerState(
@@ -396,91 +493,14 @@ class HistoryActivity : AppCompatActivity() {
             sheetState = sheetState,
             contentWindowInsets = { WindowInsets.ime }
         ) {
-            Column(
-                modifier = Modifier
-                    .padding(24.dp)
-                    .fillMaxWidth()
-                    .padding(bottom = 32.dp) // Extra space at bottom
-            ) {
-                Text(
-                    text = "Agregar Gasto",
-                    style = MaterialTheme.typography.headlineSmall,
-                    modifier = Modifier.padding(bottom = 16.dp)
-                )
 
-                OutlinedTextField(
-                    value = description,
-                    onValueChange = { description = it },
-                    label = { Text("Descripción") },
-                    modifier = Modifier.fillMaxWidth(),
-                    maxLines = 3
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                OutlinedTextField(
-                    value = amount,
-                    onValueChange = { amount = it },
-                    label = { Text("Monto") },
-                    modifier = Modifier.fillMaxWidth(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                    singleLine = true
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { showDatePicker = true }
-                ) {
-                    OutlinedTextField(
-                        value = selectedDateText,
-                        onValueChange = { },
-                        label = { Text("Fecha") },
-                        modifier = Modifier.fillMaxWidth(),
-                        readOnly = true,
-                        enabled = false, // Prevents keyboard focus
-                        leadingIcon = {
-                            Icon(
-                                painter = painterResource(id = android.R.drawable.ic_menu_my_calendar),
-                                contentDescription = null
-                            )
-                        },
-                        // We override the colors so it doesn't look "greyed out"
-                        colors = OutlinedTextFieldDefaults.colors(
-                            disabledTextColor = MaterialTheme.colorScheme.onSurface,
-                            disabledBorderColor = MaterialTheme.colorScheme.outline,
-                            disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                            disabledLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    )
-                }
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 24.dp),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    OutlinedButton(onClick = onDismiss) {
-                        Text("Cancelar")
-                    }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Button(
-                        onClick = {
-                            val amountDouble = amount.toDoubleOrNull() ?: 0.0
-                            val selectedMillis = datePickerState.selectedDateMillis ?: System.currentTimeMillis()
-                            if (description.isNotBlank() && amountDouble > 0) {
-                                onSave(description, amountDouble, selectedMillis)
-                            }
-                        }
-                    ) {
-                        Text("Agregar")
-                    }
-                }
-            }
-
+            AddtransactionForm(
+                dateTextValue = selectedDateText,
+                onDismiss = onDismiss,
+                launchDatePicker = { showDatePicker = true },
+                datePickerState = datePickerState,
+                onSave
+            )
             if (showDatePicker) {
                 DatePickerDialog(
                     onDismissRequest = { showDatePicker = false },
@@ -526,6 +546,25 @@ class HistoryActivity : AppCompatActivity() {
                 rememberLazyListState()
             )
         }
+    }
+
+    @Preview(showBackground = true)
+    @Composable
+    fun AddTransactionPreview(){
+        val datePickerState = rememberDatePickerState(
+            initialSelectedDateMillis = System.currentTimeMillis()
+        )
+        val selectedDateText = datePickerState.selectedDateMillis?.let {
+            dateUtils.formatTimestamp(it)
+        } ?: "Seleccionar fecha"
+
+        AddtransactionForm(
+            dateTextValue = selectedDateText,
+            onDismiss = {},
+            launchDatePicker = {  },
+            datePickerState = datePickerState,
+            { _, _, _ -> }
+        )
     }
 
     
