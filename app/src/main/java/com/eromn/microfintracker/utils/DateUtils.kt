@@ -30,8 +30,8 @@ class DateUtils {
 
         return when (date) {
             now -> "Hoy"
-            now.minusDays(1) -> "Ayer"
-            now.minusDays(2) -> "Ante ayer"
+            now.minusDays(1) -> "Ayer, " + date.format(DateTimeFormatter.ofPattern("d 'de' MMM", mxLocal))
+            now.minusDays(2) -> "Ante ayer, " + date.format(DateTimeFormatter.ofPattern("d 'de' MMM", mxLocal))
             else -> {
                 val formatter = DateTimeFormatter.ofPattern("EEEE, d 'de' MMMM", mxLocal)
                 date.format(formatter)
