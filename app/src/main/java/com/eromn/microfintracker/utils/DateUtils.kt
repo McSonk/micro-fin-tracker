@@ -8,11 +8,19 @@ import java.util.Locale
 
 class DateUtils {
     private val mxLocal = Locale.Builder().setLanguage("es").setRegion("MX").build()
-    fun formatTimestamp(timestamp: Long): String {
+    fun formatTime(timestamp: Long): String {
         val instant = Instant.ofEpochMilli(timestamp)
         val localDateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault())
 
-        val formatter = DateTimeFormatter.ofPattern("MMM d, h:mm a", mxLocal)
+        val formatter = DateTimeFormatter.ofPattern("h:mm a", mxLocal)
+        return localDateTime.format(formatter)
+    }
+
+    fun formatDate(timestamp: Long): String {
+        val instant = Instant.ofEpochMilli(timestamp)
+        val localDateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault())
+
+        val formatter = DateTimeFormatter.ofPattern("d 'de' MMM", mxLocal)
         return localDateTime.format(formatter)
     }
 

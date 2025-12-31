@@ -285,7 +285,7 @@ class HistoryActivity : AppCompatActivity() {
                         fontWeight = if (transaction.isRead) FontWeight.Light else FontWeight.ExtraBold
                     )},
                     supportingContent = { Text(
-                        dateUtils.formatTimestamp(transaction.timestamp),
+                        dateUtils.formatTime(transaction.timestamp),
                         color = if (transaction.isRead) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.secondary,
                         fontWeight = if (transaction.isRead) FontWeight.ExtraLight else FontWeight.Medium,
                         style = MaterialTheme.typography.titleSmall
@@ -375,6 +375,7 @@ class HistoryActivity : AppCompatActivity() {
     @Composable
     fun AddtransactionForm(
         dateTextValue: String,
+        timeTextValue: String,
         onDismiss: () -> Unit,
         launchDatePicker: () -> Unit,
         datePickerState: DatePickerState,
@@ -416,33 +417,62 @@ class HistoryActivity : AppCompatActivity() {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { launchDatePicker() }
-            ) {
-                OutlinedTextField(
-                    value = dateTextValue,
-                    onValueChange = {},
-                    label = { Text("Fecha") },
-                    modifier = Modifier.fillMaxWidth(),
-                    readOnly = true,
-                    enabled = false, // Prevents keyboard focus
-                    leadingIcon = {
-                        Icon(
-                            painter = painterResource(id = android.R.drawable.ic_menu_my_calendar),
-                            contentDescription = null
+            Row(modifier = Modifier.fillMaxWidth()){
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clickable { launchDatePicker() }
+                ) {
+                    OutlinedTextField(
+                        value = dateTextValue,
+                        onValueChange = {},
+                        label = { Text("Fecha") },
+                        modifier = Modifier.fillMaxWidth(),
+                        readOnly = true,
+                        enabled = false, // Prevents keyboard focus
+                        leadingIcon = {
+                            Icon(
+                                painter = painterResource(id = android.R.drawable.ic_menu_my_calendar),
+                                contentDescription = null
+                            )
+                        },
+                        // We override the colors so it doesn't look "greyed out"
+                        colors = OutlinedTextFieldDefaults.colors(
+                            disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                            disabledBorderColor = MaterialTheme.colorScheme.outline,
+                            disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            disabledLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                    },
-                    // We override the colors so it doesn't look "greyed out"
-                    colors = OutlinedTextFieldDefaults.colors(
-                        disabledTextColor = MaterialTheme.colorScheme.onSurface,
-                        disabledBorderColor = MaterialTheme.colorScheme.outline,
-                        disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                        disabledLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    )// end outlinedTextField
+                }// end box
+                Spacer(modifier = Modifier.width(8.dp))
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                ){
+                    OutlinedTextField(
+                        value = timeTextValue,
+                        onValueChange = {},
+                        label = { Text("Hora") },
+                        modifier = Modifier.fillMaxWidth(),
+                        readOnly = true,
+                        enabled = false,
+                        leadingIcon = {
+                            Icon(
+                                painter = painterResource(id = android.R.drawable.ic_dialog_map),
+                                contentDescription = "Un reloj",
+                            )
+                        },
+                        colors = OutlinedTextFieldDefaults.colors(
+                            disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                            disabledBorderColor = MaterialTheme.colorScheme.outline,
+                            disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            disabledLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     )
-                )
-            }
+                }
+            }// end row
+
 
             Row(
                 modifier = Modifier
@@ -485,8 +515,10 @@ class HistoryActivity : AppCompatActivity() {
             initialSelectedDateMillis = System.currentTimeMillis()
         )
         val selectedDateText = datePickerState.selectedDateMillis?.let {
-            dateUtils.formatTimestamp(it)
+            dateUtils.formatDate(it)
         } ?: "Seleccionar fecha"
+
+        val selectedTimeText = dateUtils.formatTime(System.currentTimeMillis())
 
         ModalBottomSheet(
             onDismissRequest = onDismiss,
@@ -496,6 +528,7 @@ class HistoryActivity : AppCompatActivity() {
 
             AddtransactionForm(
                 dateTextValue = selectedDateText,
+                timeTextValue = selectedTimeText,
                 onDismiss = onDismiss,
                 launchDatePicker = { showDatePicker = true },
                 datePickerState = datePickerState,
@@ -555,11 +588,13 @@ class HistoryActivity : AppCompatActivity() {
             initialSelectedDateMillis = System.currentTimeMillis()
         )
         val selectedDateText = datePickerState.selectedDateMillis?.let {
-            dateUtils.formatTimestamp(it)
+            dateUtils.formatDate(it)
         } ?: "Seleccionar fecha"
+        val selectedTimeText = dateUtils.formatTime(System.currentTimeMillis())
 
         AddtransactionForm(
             dateTextValue = selectedDateText,
+            timeTextValue = selectedTimeText,
             onDismiss = {},
             launchDatePicker = {  },
             datePickerState = datePickerState,
