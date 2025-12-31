@@ -396,6 +396,27 @@ class HistoryActivity : AppCompatActivity() {
                 modifier = Modifier.padding(bottom = 16.dp)
             )
 
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ){
+                Spacer(modifier = Modifier.width(6.dp))
+                Button(onClick = {
+                    description = "YouBike"
+                    amount = 10.0.toString()
+                }) {
+                    Text("YouBike")
+                }
+
+                Button(onClick = {
+                    description = "MRT"
+                    amount = 20.0.toString()
+                }) {
+                    Text("MRT")
+                }
+                Spacer(modifier = Modifier.width(6.dp))
+            }
+
             OutlinedTextField(
                 value = description,
                 onValueChange = { description = it },
