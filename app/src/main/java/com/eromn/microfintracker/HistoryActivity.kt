@@ -383,6 +383,8 @@ class HistoryActivity : AppCompatActivity() {
     ) {
         var description by remember { mutableStateOf("") }
         var amount by remember { mutableStateOf("") }
+        var YOUBIKE_TXT = "YouBike"
+        var MRT_TXT = "MRT"
 
         Column(
             modifier = Modifier
@@ -402,15 +404,26 @@ class HistoryActivity : AppCompatActivity() {
             ){
                 Spacer(modifier = Modifier.width(6.dp))
                 Button(onClick = {
-                    description = "YouBike"
-                    amount = 10.0.toString()
+                    if (description == YOUBIKE_TXT){
+                        val originalAmount = amount.toDoubleOrNull() ?: 0.0
+                        amount = (originalAmount + 10.0).toString()
+                    }
+                    else {
+                        description = YOUBIKE_TXT
+                        amount = 10.0.toString()
+                    }
                 }) {
                     Text("YouBike")
                 }
 
                 Button(onClick = {
-                    description = "MRT"
-                    amount = 20.0.toString()
+                    if (description == MRT_TXT) {
+                        val originalAmount = amount.toDoubleOrNull() ?: 0.0
+                        amount = (originalAmount + 20.0).toString()
+                    } else {
+                        description = MRT_TXT
+                        amount = 20.0.toString()
+                    }
                 }) {
                     Text("MRT")
                 }
