@@ -12,6 +12,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -32,8 +33,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Button
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
@@ -43,6 +45,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
@@ -54,6 +57,7 @@ import androidx.compose.material3.SwipeToDismissBoxValue.EndToStart
 import androidx.compose.material3.SwipeToDismissBoxValue.Settled
 import androidx.compose.material3.SwipeToDismissBoxValue.StartToEnd
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
@@ -64,6 +68,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -84,8 +89,6 @@ import com.eromn.microfintracker.viewmodel.HistoryViewModelFactory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlin.math.abs
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 
 class HistoryActivity : AppCompatActivity() {
     private val dateUtils = DateUtils()
@@ -160,8 +163,8 @@ class HistoryActivity : AppCompatActivity() {
                         if (showSheet) {
                             AddTransactionSheet(
                                 onDismiss = { showSheet = false },
-                                onSave = { desc, amount ->
-                                    historyViewModel.logTransaction(desc, amount)
+                                onSave = { desc, amount, timestamp ->
+                                    historyViewModel.logTransaction(desc, amount, timestamp)
                                     showSheet = false
                                 }
                             )
@@ -371,11 +374,22 @@ class HistoryActivity : AppCompatActivity() {
     @Composable
     fun AddTransactionSheet(
         onDismiss: () -> Unit,
-        onSave: (String, Double) -> Unit
+        onSave: (String, Double, Long) -> Unit
     ) {
-        val sheetState = rememberModalBottomSheetState()
+        val sheetState = rememberModalBottomSheetState(
+            skipPartiallyExpanded = true
+        )
         var description by remember { mutableStateOf("") }
         var amount by remember { mutableStateOf("") }
+
+        // date stuff
+        var showDatePicker by remember { mutableStateOf(false) }
+        val datePickerState = rememberDatePickerState(
+            initialSelectedDateMillis = System.currentTimeMillis()
+        )
+        val selectedDateText = datePickerState.selectedDateMillis?.let {
+            dateUtils.formatTimestamp(it)
+        } ?: "Seleccionar fecha"
 
         ModalBottomSheet(
             onDismissRequest = onDismiss,
@@ -413,6 +427,36 @@ class HistoryActivity : AppCompatActivity() {
                     singleLine = true
                 )
 
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { showDatePicker = true }
+                ) {
+                    OutlinedTextField(
+                        value = selectedDateText,
+                        onValueChange = { },
+                        label = { Text("Fecha") },
+                        modifier = Modifier.fillMaxWidth(),
+                        readOnly = true,
+                        enabled = false, // Prevents keyboard focus
+                        leadingIcon = {
+                            Icon(
+                                painter = painterResource(id = android.R.drawable.ic_menu_my_calendar),
+                                contentDescription = null
+                            )
+                        },
+                        // We override the colors so it doesn't look "greyed out"
+                        colors = OutlinedTextFieldDefaults.colors(
+                            disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                            disabledBorderColor = MaterialTheme.colorScheme.outline,
+                            disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            disabledLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    )
+                }
+
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -426,8 +470,9 @@ class HistoryActivity : AppCompatActivity() {
                     Button(
                         onClick = {
                             val amountDouble = amount.toDoubleOrNull() ?: 0.0
+                            val selectedMillis = datePickerState.selectedDateMillis ?: System.currentTimeMillis()
                             if (description.isNotBlank() && amountDouble > 0) {
-                                onSave(description, amountDouble)
+                                onSave(description, amountDouble, selectedMillis)
                             }
                         }
                     ) {
@@ -435,7 +480,25 @@ class HistoryActivity : AppCompatActivity() {
                     }
                 }
             }
-        }
+
+            if (showDatePicker) {
+                DatePickerDialog(
+                    onDismissRequest = { showDatePicker = false },
+                    confirmButton = {
+                        Button(onClick = { showDatePicker = false }) {
+                            Text("OK")
+                        }
+                    },
+                    dismissButton = {
+                        OutlinedButton(onClick = { showDatePicker = false }) {
+                            Text("Cancelar")
+                        }
+                    }
+                ) {
+                    DatePicker(state = datePickerState)
+                }
+            }
+        } // end ModalBottomSheet
     }
 
     @Preview(showBackground = true)
@@ -465,4 +528,5 @@ class HistoryActivity : AppCompatActivity() {
         }
     }
 
+    
 }
