@@ -419,7 +419,7 @@ class HistoryActivity : AppCompatActivity() {
                 Button(onClick = {
                     if (description == MRT_TXT) {
                         val originalAmount = amount.toDoubleOrNull() ?: 0.0
-                        amount = (originalAmount + 20.0).toString()
+                        amount = (originalAmount + 5.0).toString()
                     } else {
                         description = MRT_TXT
                         amount = 20.0.toString()
