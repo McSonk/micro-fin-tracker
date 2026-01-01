@@ -380,19 +380,21 @@ class HistoryActivity : AppCompatActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun AddtransactionForm(
-        dateTextValue: String,
-        timeTextValue: String,
-        onDismiss: () -> Unit,
-        launchDatePicker: () -> Unit,
-        launchTimePicker: () -> Unit,
         datePickerState: DatePickerState,
         timePickerState: TimePickerState,
-        onSave: (String, Double, Long) -> Unit
+        launchDatePicker: () -> Unit,
+        launchTimePicker: () -> Unit,
+        onDismiss: () -> Unit,
+        onSave: (String, Double, Long) -> Unit,
     ) {
-        var description by remember { mutableStateOf("") }
-        var amount by remember { mutableStateOf("") }
         var YOUBIKE_TXT = "YouBike"
         var MRT_TXT = "MRT"
+
+        var description by remember { mutableStateOf("") }
+        var amount by remember { mutableStateOf("") }
+        val selectedDateText = dateUtils.formatDate(datePickerState.selectedDateMillis!!)
+
+        val selectedTimeText = dateUtils.formatTime(timePickerState.hour, timePickerState.minute)
 
         Column(
             modifier = Modifier
@@ -468,7 +470,7 @@ class HistoryActivity : AppCompatActivity() {
                         .clickable { launchDatePicker() }
                 ) {
                     OutlinedTextField(
-                        value = dateTextValue,
+                        value = selectedDateText,
                         onValueChange = {},
                         label = { Text("Fecha") },
                         modifier = Modifier.fillMaxWidth(),
@@ -496,7 +498,7 @@ class HistoryActivity : AppCompatActivity() {
                         .clickable{ launchTimePicker() }
                 ){
                     OutlinedTextField(
-                        value = timeTextValue,
+                        value = selectedTimeText,
                         onValueChange = {},
                         label = { Text("Hora") },
                         modifier = Modifier.fillMaxWidth(),
@@ -559,9 +561,6 @@ class HistoryActivity : AppCompatActivity() {
         val datePickerState = rememberDatePickerState(
             initialSelectedDateMillis = System.currentTimeMillis()
         )
-        val selectedDateText = datePickerState.selectedDateMillis?.let {
-            dateUtils.formatDate(it)
-        } ?: "Seleccionar fecha"
 
 
         // Time stuff
@@ -572,11 +571,6 @@ class HistoryActivity : AppCompatActivity() {
             initialMinute = currentTime.get(Calendar.MINUTE),
             is24Hour = false,
         )
-        val cal = Calendar.getInstance()
-        cal.set(Calendar.HOUR_OF_DAY, timePickerState.hour)
-        cal.set(Calendar.MINUTE, timePickerState.minute)
-        cal.isLenient = false
-        val selectedTimeText = dateUtils.formatTime(cal.timeInMillis)
 
         ModalBottomSheet(
             onDismissRequest = onDismiss,
@@ -585,14 +579,12 @@ class HistoryActivity : AppCompatActivity() {
         ) {
 
             AddtransactionForm(
-                dateTextValue = selectedDateText,
-                timeTextValue = selectedTimeText,
-                onDismiss = onDismiss,
                 launchDatePicker = { showDatePicker = true },
                 launchTimePicker = { showTimePicker = true },
                 datePickerState = datePickerState,
                 timePickerState = timePickerState,
-                onSave
+                onDismiss = onDismiss,
+                onSave = onSave
             )
             if (showDatePicker) {
                 DatePickerDialog(
@@ -657,10 +649,6 @@ class HistoryActivity : AppCompatActivity() {
         val datePickerState = rememberDatePickerState(
             initialSelectedDateMillis = System.currentTimeMillis()
         )
-        val selectedDateText = datePickerState.selectedDateMillis?.let {
-            dateUtils.formatDate(it)
-        } ?: "Seleccionar fecha"
-        val selectedTimeText = dateUtils.formatTime(System.currentTimeMillis())
 
         // Time stuff
         val currentTime = Calendar.getInstance()
@@ -671,14 +659,12 @@ class HistoryActivity : AppCompatActivity() {
         )
 
         AddtransactionForm(
-            dateTextValue = selectedDateText,
-            timeTextValue = selectedTimeText,
             onDismiss = {},
             launchDatePicker = {  },
             launchTimePicker = { },
             datePickerState = datePickerState,
             timePickerState = timePickerState,
-            { _, _, _ -> }
+            onSave = { _, _, _ -> }
         )
     }
 

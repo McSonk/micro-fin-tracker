@@ -17,6 +17,15 @@ class DateUtils {
         return localDateTime.format(formatter)
     }
 
+    fun formatTime(hour: Int, minute: Int): String {
+        val cal = Calendar.getInstance()
+        cal.set(Calendar.HOUR_OF_DAY, hour)
+        cal.set(Calendar.MINUTE, minute)
+        cal.isLenient = false
+
+        return formatTime(cal.timeInMillis )
+    }
+
     fun formatDate(timestamp: Long): String {
         val instant = Instant.ofEpochMilli(timestamp)
         val localDateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault())
