@@ -58,9 +58,13 @@ import androidx.compose.material3.SwipeToDismissBoxValue.EndToStart
 import androidx.compose.material3.SwipeToDismissBoxValue.Settled
 import androidx.compose.material3.SwipeToDismissBoxValue.StartToEnd
 import androidx.compose.material3.Text
+import androidx.compose.material3.TimePicker
+import androidx.compose.material3.TimePickerDialog
+import androidx.compose.material3.TimePickerState
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.rememberSwipeToDismissBoxState
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -90,6 +94,7 @@ import com.eromn.microfintracker.viewmodel.HistoryViewModel
 import com.eromn.microfintracker.viewmodel.HistoryViewModelFactory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import java.util.Calendar
 import kotlin.math.abs
 
 class HistoryActivity : AppCompatActivity() {
@@ -372,13 +377,16 @@ class HistoryActivity : AppCompatActivity() {
     }
 
     // Externalise component so we can preview it
+    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun AddtransactionForm(
         dateTextValue: String,
         timeTextValue: String,
         onDismiss: () -> Unit,
         launchDatePicker: () -> Unit,
+        launchTimePicker: () -> Unit,
         datePickerState: DatePickerState,
+        timePickerState: TimePickerState,
         onSave: (String, Double, Long) -> Unit
     ) {
         var description by remember { mutableStateOf("") }
@@ -451,8 +459,10 @@ class HistoryActivity : AppCompatActivity() {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Row(modifier = Modifier.fillMaxWidth()){
-                Box(
+            Row(// Date and time
+                modifier = Modifier.fillMaxWidth()
+            ){
+                Box(// Date
                     modifier = Modifier
                         .weight(1f)
                         .clickable { launchDatePicker() }
@@ -480,9 +490,10 @@ class HistoryActivity : AppCompatActivity() {
                     )// end outlinedTextField
                 }// end box
                 Spacer(modifier = Modifier.width(8.dp))
-                Box(
+                Box(// Time
                     modifier = Modifier
                         .weight(1f)
+                        .clickable{ launchTimePicker() }
                 ){
                     OutlinedTextField(
                         value = timeTextValue,
@@ -505,10 +516,9 @@ class HistoryActivity : AppCompatActivity() {
                         )
                     )
                 }
-            }// end row
+            }// end row (date and time)
 
-
-            Row(
+            Row( //Buttons
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 24.dp),
@@ -521,7 +531,8 @@ class HistoryActivity : AppCompatActivity() {
                 Button(
                     onClick = {
                         val amountDouble = amount.toDoubleOrNull() ?: 0.0
-                        val selectedMillis = datePickerState.selectedDateMillis ?: System.currentTimeMillis()
+                        val selectedDate = datePickerState.selectedDateMillis
+                        val selectedMillis = dateUtils.mergeDateTime(selectedDate!!, timePickerState.hour, timePickerState.minute)
                         if (description.isNotBlank() && amountDouble > 0) {
                             onSave(description, amountDouble, selectedMillis)
                         }
@@ -529,7 +540,7 @@ class HistoryActivity : AppCompatActivity() {
                 ) {
                     Text("Agregar")
                 }
-            }
+            } // end buttons row
         }// end Column
     }
 
@@ -552,7 +563,20 @@ class HistoryActivity : AppCompatActivity() {
             dateUtils.formatDate(it)
         } ?: "Seleccionar fecha"
 
-        val selectedTimeText = dateUtils.formatTime(System.currentTimeMillis())
+
+        // Time stuff
+        var showTimePicker by remember { mutableStateOf(false) }
+        val currentTime = Calendar.getInstance()
+        val timePickerState = rememberTimePickerState(
+            initialHour = currentTime.get(Calendar.HOUR_OF_DAY),
+            initialMinute = currentTime.get(Calendar.MINUTE),
+            is24Hour = false,
+        )
+        val cal = Calendar.getInstance()
+        cal.set(Calendar.HOUR_OF_DAY, timePickerState.hour)
+        cal.set(Calendar.MINUTE, timePickerState.minute)
+        cal.isLenient = false
+        val selectedTimeText = dateUtils.formatTime(cal.timeInMillis)
 
         ModalBottomSheet(
             onDismissRequest = onDismiss,
@@ -565,7 +589,9 @@ class HistoryActivity : AppCompatActivity() {
                 timeTextValue = selectedTimeText,
                 onDismiss = onDismiss,
                 launchDatePicker = { showDatePicker = true },
+                launchTimePicker = { showTimePicker = true },
                 datePickerState = datePickerState,
+                timePickerState = timePickerState,
                 onSave
             )
             if (showDatePicker) {
@@ -573,18 +599,26 @@ class HistoryActivity : AppCompatActivity() {
                     onDismissRequest = { showDatePicker = false },
                     confirmButton = {
                         Button(onClick = { showDatePicker = false }) {
-                            Text("OK")
-                        }
-                    },
-                    dismissButton = {
-                        OutlinedButton(onClick = { showDatePicker = false }) {
-                            Text("Cancelar")
+                            Text("Aceptar")
                         }
                     }
                 ) {
                     DatePicker(state = datePickerState)
                 }
-            }
+            }// end date modal
+            if (showTimePicker) { // time modal
+                TimePickerDialog(
+                    title = { Text("Selecciona la hora") },
+                    onDismissRequest = { showTimePicker = false  },
+                    confirmButton = {
+                        Button(onClick = { showTimePicker = false }) {
+                            Text("Aceptar")
+                        }
+                    }
+                ) {
+                    TimePicker(state = timePickerState)
+                }// end timePickerDialog
+            }// end time modal
         } // end ModalBottomSheet
     }
 
@@ -615,9 +649,11 @@ class HistoryActivity : AppCompatActivity() {
         }
     }
 
+    @OptIn(ExperimentalMaterial3Api::class)
     @Preview(showBackground = true)
     @Composable
     fun AddTransactionPreview(){
+        // date stuff
         val datePickerState = rememberDatePickerState(
             initialSelectedDateMillis = System.currentTimeMillis()
         )
@@ -626,12 +662,22 @@ class HistoryActivity : AppCompatActivity() {
         } ?: "Seleccionar fecha"
         val selectedTimeText = dateUtils.formatTime(System.currentTimeMillis())
 
+        // Time stuff
+        val currentTime = Calendar.getInstance()
+        val timePickerState = rememberTimePickerState(
+            initialHour = currentTime.get(Calendar.HOUR_OF_DAY),
+            initialMinute = currentTime.get(Calendar.MINUTE),
+            is24Hour = true,
+        )
+
         AddtransactionForm(
             dateTextValue = selectedDateText,
             timeTextValue = selectedTimeText,
             onDismiss = {},
             launchDatePicker = {  },
+            launchTimePicker = { },
             datePickerState = datePickerState,
+            timePickerState = timePickerState,
             { _, _, _ -> }
         )
     }
