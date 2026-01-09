@@ -393,7 +393,6 @@ class HistoryActivity : AppCompatActivity() {
         var description by remember { mutableStateOf("") }
         var amount by remember { mutableStateOf("") }
         val selectedDateText = dateUtils.formatDate(datePickerState.selectedDateMillis!!)
-
         val selectedTimeText = dateUtils.formatTime(timePickerState.hour, timePickerState.minute)
 
         Column(

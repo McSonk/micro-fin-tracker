@@ -44,7 +44,6 @@ class DateUtils {
             now.minusDays(2) -> "Ante ayer, " + date.format(DateTimeFormatter.ofPattern("d 'de' MMM", mxLocal))
             else -> {
                 val formatter = DateTimeFormatter.ofPattern("EEEE, d 'de' MMMM", mxLocal)
-                date.format(formatter)
                 date.format(formatter).replaceFirstChar { it.uppercase() }
             }
         }
