@@ -98,9 +98,6 @@ import java.util.Calendar
 import kotlin.math.abs
 
 class HistoryActivity : AppCompatActivity() {
-    private val dateUtils = DateUtils()
-
-
     private val historyViewModel: HistoryViewModel by viewModels {
         HistoryViewModelFactory(
             TransactionRepository(AppDatabase.getDatabase(applicationContext).transactionDao())
@@ -290,7 +287,7 @@ class HistoryActivity : AppCompatActivity() {
                         fontWeight = if (transaction.isRead) FontWeight.Light else FontWeight.ExtraBold
                     )},
                     supportingContent = { Text(
-                        dateUtils.formatTime(transaction.timestamp),
+                        DateUtils.formatTime(transaction.timestamp),
                         color = if (transaction.isRead) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.secondary,
                         fontWeight = if (transaction.isRead) FontWeight.ExtraLight else FontWeight.Medium,
                         style = MaterialTheme.typography.titleSmall
@@ -392,8 +389,8 @@ class HistoryActivity : AppCompatActivity() {
 
         var description by remember { mutableStateOf("") }
         var amount by remember { mutableStateOf("") }
-        val selectedDateText = dateUtils.formatDate(datePickerState.selectedDateMillis!!)
-        val selectedTimeText = dateUtils.formatTime(timePickerState.hour, timePickerState.minute)
+        val selectedDateText = DateUtils.formatDateUTC(datePickerState.selectedDateMillis!!)
+        val selectedTimeText = DateUtils.formatTime(timePickerState.hour, timePickerState.minute)
 
         Column(
             modifier = Modifier
@@ -533,7 +530,7 @@ class HistoryActivity : AppCompatActivity() {
                     onClick = {
                         val amountDouble = amount.toDoubleOrNull() ?: 0.0
                         val selectedDate = datePickerState.selectedDateMillis
-                        val selectedMillis = dateUtils.mergeDateTime(selectedDate!!, timePickerState.hour, timePickerState.minute)
+                        val selectedMillis = DateUtils.mergeDateTimeUTC(selectedDate!!, timePickerState.hour, timePickerState.minute)
                         if (description.isNotBlank() && amountDouble > 0) {
                             onSave(description, amountDouble, selectedMillis)
                         }
@@ -558,7 +555,7 @@ class HistoryActivity : AppCompatActivity() {
         // date stuff
         var showDatePicker by remember { mutableStateOf(false) }
         val datePickerState = rememberDatePickerState(
-            initialSelectedDateMillis = System.currentTimeMillis()
+            initialSelectedDateMillis = DateUtils.getTodayUtcMidnight()
         )
 
 
@@ -646,7 +643,7 @@ class HistoryActivity : AppCompatActivity() {
     fun AddTransactionPreview(){
         // date stuff
         val datePickerState = rememberDatePickerState(
-            initialSelectedDateMillis = System.currentTimeMillis()
+            initialSelectedDateMillis = DateUtils.getTodayUtcMidnight()
         )
 
         // Time stuff

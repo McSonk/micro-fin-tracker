@@ -16,7 +16,7 @@ class HistoryViewModel(private val repository: TransactionRepository) : ViewMode
     val allTransactions: Flow<List<Transaction>> = repository.allTransactions
     val groupedTransactions: Flow<Map<String, List<Transaction>>> = allTransactions
         .map { list->
-            list.groupBy { DateUtils().formatHeaderDate(it.timestamp) }
+            list.groupBy { DateUtils.formatHeaderDate(it.timestamp) }
         }
         .flowOn(Dispatchers.Default)
 
