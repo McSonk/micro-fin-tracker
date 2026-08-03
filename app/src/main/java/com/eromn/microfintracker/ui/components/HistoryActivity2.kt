@@ -32,8 +32,10 @@ import androidx.compose.ui.unit.sp
 import com.eromn.microfintracker.data.Transaction
 import com.eromn.microfintracker.ui.theme.FinTrackTheme
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.eromn.microfintracker.R
 
+@PreviewLightDark
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun DashboardPreview() {
@@ -95,69 +97,82 @@ fun DashboardScreen(
                     .padding(innerPadding),
                 color = MaterialTheme.colorScheme.background
             ) {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    // Header Section
-                    item {
-                        HeaderSection(username, onLogout)
-                        Spacer(modifier = Modifier.height(24.dp))
-                    }
-
-                    // Spending Summary
-                    item {
-                        SpendingSummary(monthlySpent, todaySpent)
-                        Spacer(modifier = Modifier.height(20.dp))
-                    }
-
-                    // Category Chips
-                    item {
-                        CategoryChips(categories)
-                        Spacer(modifier = Modifier.height(24.dp))
-                    }
-
-                    // Transactions Section
-                    item {
-                        Text(
-                            text = "Transactions",
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = MaterialTheme.colorScheme.onBackground,
+                Column(modifier = Modifier.fillMaxSize()) {
+                    // LIGHT BACKGROUND SECTION (Header + Spending)
+                    Surface(
+                        modifier = Modifier.fillMaxWidth(),
+                        color = MaterialTheme.colorScheme.surface
+                    ) {
+                        Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 16.dp)
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                    }
-
-                    // Grouped Transactions
-                    transactionsByDate.forEach { (date, transactions) ->
-                        item {
-                            Text(
-                                text = date,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Medium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 16.dp)
-                                    .padding(bottom = 8.dp)
-                            )
-                        }
-
-                        items(transactions) { transaction ->
-                            TransactionItem(
-                                transaction = transaction,
-                                onClick = { onTransactionClick(transaction) }
-                            )
-                            Spacer(modifier = Modifier.height(12.dp))
+                                .padding(bottom = 16.dp)
+                        ) {
+                            HeaderSection(username, onLogout)
+                            Spacer(modifier = Modifier.height(24.dp))
+                            SpendingSummary(monthlySpent, todaySpent)
                         }
                     }
 
-                    // Bottom spacer
-                    item {
-                        Spacer(modifier = Modifier.height(80.dp))
+                    // DARK BACKGROUND SECTION (Categories + Transactions)
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .weight(1f),
+                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                    ) {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            // Category Chips
+                            item {
+                                CategoryChips(categories)
+                                Spacer(modifier = Modifier.height(24.dp))
+                            }
+
+                            // Transactions Section
+                            item {
+                                Text(
+                                    text = "Transactions",
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 16.dp)
+                                )
+                                Spacer(modifier = Modifier.height(16.dp))
+                            }
+
+                            // Grouped Transactions
+                            transactionsByDate.forEach { (date, transactions) ->
+                                item {
+                                    Text(
+                                        text = date,
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Medium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(horizontal = 16.dp)
+                                            .padding(bottom = 8.dp)
+                                    )
+                                }
+
+                                items(transactions) { transaction ->
+                                    TransactionItem(
+                                        transaction = transaction,
+                                        onClick = { onTransactionClick(transaction) }
+                                    )
+                                    Spacer(modifier = Modifier.height(12.dp))
+                                }
+                            }
+
+                            // Bottom spacer
+                            item {
+                                Spacer(modifier = Modifier.height(80.dp))
+                            }
+                        }
                     }
                 }
             }
@@ -257,7 +272,6 @@ private fun CategoryChips(categories: List<Pair<String, Double>>) {
 
 @Composable
 private fun CategoryChip(name: String, amount: Double, modifier: Modifier = Modifier) {
-    // Map category names to local drawable resources
     val iconRes = when (name.lowercase()) {
         "bus" -> R.drawable.ic_directions_bus_24
         "bike rental" -> R.drawable.ic_bike_lane_24
@@ -269,6 +283,7 @@ private fun CategoryChip(name: String, amount: Double, modifier: Modifier = Modi
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant
         ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         modifier = modifier
     ) {
         Row(
@@ -305,6 +320,7 @@ private fun TransactionItem(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant
         ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
