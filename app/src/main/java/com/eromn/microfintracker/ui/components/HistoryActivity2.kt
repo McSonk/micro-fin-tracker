@@ -34,6 +34,7 @@ import com.eromn.microfintracker.ui.theme.FinTrackTheme
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.eromn.microfintracker.R
+import androidx.compose.foundation.background
 
 @PreviewLightDark
 @Preview(showBackground = true, showSystemUi = true)
@@ -91,21 +92,20 @@ fun DashboardScreen(
                 }
             }
         ) { innerPadding ->
+            // BOTTOM ZONE COLOR: plain background (white in light, near-black in dark)
             Surface(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding),
                 color = MaterialTheme.colorScheme.background
             ) {
-                Column(modifier = Modifier.fillMaxSize()) {
-                    // LIGHT BACKGROUND SECTION (Header + Spending)
-                    Surface(
-                        modifier = Modifier.fillMaxWidth(),
-                        color = MaterialTheme.colorScheme.surface
-                    ) {
+                LazyColumn(modifier = Modifier.fillMaxSize()) {
+                    // TOP ZONE: contrasting panel, scrolls away with the content
+                    item {
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.inverseSurface)
                                 .padding(bottom = 16.dp)
                         ) {
                             HeaderSection(username, onLogout)
@@ -114,65 +114,54 @@ fun DashboardScreen(
                         }
                     }
 
-                    // DARK BACKGROUND SECTION (Categories + Transactions)
-                    Surface(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .weight(1f),
-                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
-                    ) {
-                        LazyColumn(
-                            modifier = Modifier.fillMaxSize()
-                        ) {
-                            // Category Chips
-                            item {
-                                CategoryChips(categories)
-                                Spacer(modifier = Modifier.height(24.dp))
-                            }
+                    // Category Chips (bottom zone, line sits just above them)
+                    item {
+                        Spacer(modifier = Modifier.height(16.dp))
+                        CategoryChips(categories)
+                        Spacer(modifier = Modifier.height(24.dp))
+                    }
 
-                            // Transactions Section
-                            item {
-                                Text(
-                                    text = "Transactions",
-                                    fontSize = 18.sp,
-                                    fontWeight = FontWeight.Medium,
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(horizontal = 16.dp)
-                                )
-                                Spacer(modifier = Modifier.height(16.dp))
-                            }
+                    // Transactions Section
+                    item {
+                        Text(
+                            text = "Transactions",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onBackground,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp)
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
 
-                            // Grouped Transactions
-                            transactionsByDate.forEach { (date, transactions) ->
-                                item {
-                                    Text(
-                                        text = date,
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.Medium,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(horizontal = 16.dp)
-                                            .padding(bottom = 8.dp)
-                                    )
-                                }
-
-                                items(transactions) { transaction ->
-                                    TransactionItem(
-                                        transaction = transaction,
-                                        onClick = { onTransactionClick(transaction) }
-                                    )
-                                    Spacer(modifier = Modifier.height(12.dp))
-                                }
-                            }
-
-                            // Bottom spacer
-                            item {
-                                Spacer(modifier = Modifier.height(80.dp))
-                            }
+                    // Grouped Transactions
+                    transactionsByDate.forEach { (date, transactions) ->
+                        item {
+                            Text(
+                                text = date,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp)
+                                    .padding(bottom = 8.dp)
+                            )
                         }
+
+                        items(transactions) { transaction ->
+                            TransactionItem(
+                                transaction = transaction,
+                                onClick = { onTransactionClick(transaction) }
+                            )
+                            Spacer(modifier = Modifier.height(12.dp))
+                        }
+                    }
+
+                    // Bottom spacer
+                    item {
+                        Spacer(modifier = Modifier.height(80.dp))
                     }
                 }
             }
@@ -200,14 +189,14 @@ private fun HeaderSection(
                 Text(
                     text = "Welcome back",
                     fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.inverseOnSurface.copy(alpha = 0.7f)
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = username,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onBackground
+                    color = MaterialTheme.colorScheme.inverseOnSurface
                 )
             }
 
@@ -215,7 +204,7 @@ private fun HeaderSection(
                 Icon(
                     painter = painterResource(R.drawable.ic_logout_24),
                     contentDescription = "Logout",
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    tint = MaterialTheme.colorScheme.inverseOnSurface
                 )
             }
         }
@@ -235,20 +224,20 @@ private fun SpendingSummary(
         Text(
             text = "Spent this month",
             fontSize = 14.sp,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = MaterialTheme.colorScheme.inverseOnSurface.copy(alpha = 0.7f)
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = "$${String.format("%.0f", monthlySpent)}",
             fontSize = 48.sp,
             fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onBackground
+            color = MaterialTheme.colorScheme.inverseOnSurface
         )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = "$${String.format("%.0f", todaySpent)} today",
             fontSize = 16.sp,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = MaterialTheme.colorScheme.inverseOnSurface.copy(alpha = 0.7f)
         )
     }
 }
