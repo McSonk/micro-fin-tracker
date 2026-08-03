@@ -34,6 +34,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.eromn.microfintracker.R
 import androidx.compose.foundation.background
+import com.eromn.microfintracker.utils.DateUtils
 
 @PreviewLightDark
 @Preview(showBackground = true, showSystemUi = true)
@@ -199,7 +200,7 @@ private fun TransactionItem(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = formatTimestamp(transaction.timestamp),
+                    text = DateUtils.formatTime(transaction.timestamp),
                     fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -212,10 +213,4 @@ private fun TransactionItem(
             )
         }
     }
-}
-
-private fun formatTimestamp(timestamp: Long): String {
-    val javaDate = java.util.Date(timestamp)
-    val sdf = java.text.SimpleDateFormat("MMM d, h:mm a", java.util.Locale.getDefault())
-    return sdf.format(javaDate)
 }
