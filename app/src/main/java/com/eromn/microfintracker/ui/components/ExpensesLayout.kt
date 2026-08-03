@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -31,11 +32,37 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.eromn.microfintracker.R
 import com.eromn.microfintracker.data.Transaction
 import com.eromn.microfintracker.utils.DateUtils
 import kotlin.math.abs
+
+@Preview
+@Composable
+fun PreviewExpenseLayout(){
+    val dummyGrouped = mapOf(
+        "Hoy" to listOf(
+            Transaction(0, "uBike", 10.0, 1234567890, isRead = false),
+            Transaction(1, "Oxxo", 55.5, 1234567891, isRead = false)
+        ),
+        "Ayer" to listOf(
+            Transaction(2, "MRT", 20.0, 1234567890, isRead = true)
+        ),
+        "25 de Diciembre" to listOf(
+            Transaction(3, "Señora pancakes", 50.0, 1234567890, isRead = false),
+            Transaction(4, "Cena Navidad", 500.0, 1234567890, isRead = true)
+        )
+    )
+    val listState = rememberLazyListState()
+    TxHistory(
+        dummyGrouped,
+        onToggleRead = {},
+        onDelete = {},
+        listState
+    )
+}
 
 @Composable
 fun TxHistory(
