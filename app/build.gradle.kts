@@ -77,7 +77,7 @@ dependencies {
     // Optional - Integration with LiveData
     implementation(libs.androidx.runtime.livedata)
     // Optional - Integration with RxJava
-    implementation(libs.androidx.runtime.rxjava2)
+    implementation(libs.androidx.runtime.rxjava3)
     //***** End compose
     // room
     implementation(libs.androidx.room.runtime)
