@@ -17,7 +17,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -56,7 +55,6 @@ fun DashboardPreview() {
         username = "test",
         monthlySpent = 950.0,
         todaySpent = 500.0,
-        categories = listOf("Bus" to 150.0, "Bike rental" to 500.0),
         transactionsByDate = groupedTransactions,
         onLogout = { },
         onAddTransaction = { },
@@ -70,7 +68,6 @@ fun DashboardScreen(
     username: String,
     monthlySpent: Double,
     todaySpent: Double,
-    categories: List<Pair<String, Double>>,
     transactionsByDate: Map<String, List<Transaction>>,
     onLogout: () -> Unit,
     onAddTransaction: () -> Unit,
@@ -108,17 +105,18 @@ fun DashboardScreen(
                                 .background(MaterialTheme.colorScheme.inverseSurface)
                                 .padding(bottom = 16.dp)
                         ) {
-                            HeaderSection(username, onLogout)
-                            Spacer(modifier = Modifier.height(24.dp))
-                            SpendingSummary(monthlySpent, todaySpent)
+                            UpperHeader(
+                                username,
+                                onLogout,
+                                monthlySpent,
+                                todaySpent
+                            )
                         }
                     }
 
                     // Category Chips (bottom zone, line sits just above them)
                     item {
                         Spacer(modifier = Modifier.height(16.dp))
-                        CategoryChips(categories)
-                        Spacer(modifier = Modifier.height(24.dp))
                     }
 
                     // Transactions Section
@@ -165,135 +163,6 @@ fun DashboardScreen(
                     }
                 }
             }
-        }
-    }
-}
-
-@Composable
-private fun HeaderSection(
-    username: String,
-    onLogout: () -> Unit
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp)
-            .padding(top = 16.dp)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column {
-                Text(
-                    text = "Welcome back",
-                    fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.inverseOnSurface.copy(alpha = 0.7f)
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = username,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.inverseOnSurface
-                )
-            }
-
-            IconButton(onClick = onLogout) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_logout_24),
-                    contentDescription = "Logout",
-                    tint = MaterialTheme.colorScheme.inverseOnSurface
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun SpendingSummary(
-    monthlySpent: Double,
-    todaySpent: Double
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp)
-    ) {
-        Text(
-            text = "Spent this month",
-            fontSize = 14.sp,
-            color = MaterialTheme.colorScheme.inverseOnSurface.copy(alpha = 0.7f)
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = "$${String.format("%.0f", monthlySpent)}",
-            fontSize = 48.sp,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.inverseOnSurface
-        )
-        Spacer(modifier = Modifier.height(4.dp))
-        Text(
-            text = "$${String.format("%.0f", todaySpent)} today",
-            fontSize = 16.sp,
-            color = MaterialTheme.colorScheme.inverseOnSurface.copy(alpha = 0.7f)
-        )
-    }
-}
-
-@Composable
-private fun CategoryChips(categories: List<Pair<String, Double>>) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        categories.forEach { (name, amount) ->
-            CategoryChip(
-                name,
-                amount,
-                modifier = Modifier.weight(1f))
-        }
-    }
-}
-
-@Composable
-private fun CategoryChip(name: String, amount: Double, modifier: Modifier = Modifier) {
-    val iconRes = when (name.lowercase()) {
-        "bus" -> R.drawable.ic_directions_bus_24
-        "bike rental" -> R.drawable.ic_bike_lane_24
-        else -> R.drawable.ic_attach_money_24
-    }
-
-    Card(
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        modifier = modifier
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Icon(
-                painter = painterResource(id = iconRes),
-                contentDescription = name,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(24.dp)
-            )
-            Text(
-                text = name,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onSurface
-            )
         }
     }
 }
