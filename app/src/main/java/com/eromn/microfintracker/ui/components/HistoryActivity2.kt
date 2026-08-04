@@ -40,6 +40,14 @@ import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.ui.draw.clip
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 
 @PreviewLightDark
 @Preview(showBackground = true, showSystemUi = true)
@@ -80,7 +88,28 @@ fun DashboardScreen(
     onTransactionClick: (Transaction) -> Unit
 ) {
     FinTrackTheme {
+        val snackbarHostState = remember { SnackbarHostState() }
+        val coroutineScope = rememberCoroutineScope()
+
+        val showDeleteSnackbar: (Transaction) -> Unit = { tx ->
+            coroutineScope.launch {
+                val result = snackbarHostState.showSnackbar(
+                    message = "Item removed",
+                    actionLabel = "Undo",
+                    duration = SnackbarDuration.Indefinite
+                )
+                when (result) {
+                    SnackbarResult.ActionPerformed -> {
+                        // TODO (next step): cancel deletion of tx
+                    }
+                    SnackbarResult.Dismissed -> {
+                        // TODO (next step): commit deletion of tx
+                    }
+                }
+            }
+        }
         Scaffold(
+            snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
             floatingActionButton = {
                 FloatingActionButton(
                     onClick = onAddTransaction,
@@ -157,7 +186,8 @@ fun DashboardScreen(
                         items(transactions) { transaction ->
                             SwipeableTransactionItem(
                                 transaction = transaction,
-                                onClick = { onTransactionClick(transaction) }
+                                onClick = { onTransactionClick(transaction) },
+                                onDeleteRequested = showDeleteSnackbar
                             )
                             Spacer(modifier = Modifier.height(12.dp))
                         }
@@ -223,18 +253,18 @@ private fun TransactionItem(
 @Composable
 private fun SwipeableTransactionItem(
     transaction: Transaction,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onDeleteRequested: (Transaction) -> Unit
 ) {
-    val dismissState = rememberSwipeToDismissBoxState(
-        confirmValueChange = { value ->
-            if (value == SwipeToDismissBoxValue.EndToStart) {
-                // TODO (next step): call onDelete(transaction) and return true
-                false // for now: never delete, always spring back
-            } else {
-                true
-            }
+    val dismissState = rememberSwipeToDismissBoxState() // no confirmValueChange
+
+    LaunchedEffect(dismissState.currentValue) {
+        if (dismissState.currentValue == SwipeToDismissBoxValue.EndToStart) {
+            onDeleteRequested(transaction)
+            // Dummy step: snap back instead of really removing the item.
+            dismissState.snapTo(SwipeToDismissBoxValue.Settled)
         }
-    )
+    }
 
     SwipeToDismissBox(
         state = dismissState,
