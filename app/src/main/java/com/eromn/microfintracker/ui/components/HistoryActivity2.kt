@@ -48,6 +48,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
 
 @PreviewLightDark
 @Preview(showBackground = true, showSystemUi = true)
@@ -96,7 +99,7 @@ fun DashboardScreen(
                 val result = snackbarHostState.showSnackbar(
                     message = "Item removed",
                     actionLabel = "Undo",
-                    duration = SnackbarDuration.Indefinite
+                    duration = SnackbarDuration.Long
                 )
                 when (result) {
                     SnackbarResult.ActionPerformed -> {
@@ -256,15 +259,25 @@ private fun SwipeableTransactionItem(
     onClick: () -> Unit,
     onDeleteRequested: (Transaction) -> Unit
 ) {
-    val dismissState = rememberSwipeToDismissBoxState() // no confirmValueChange
+    // Flag to ensure the side-effect only fires once per swipe,
+    // even if the swipe machinery consults confirmValueChange multiple times during the settle animation.
+    var hasTriggered by remember { mutableStateOf(false) }
 
-    LaunchedEffect(dismissState.currentValue) {
-        if (dismissState.currentValue == SwipeToDismissBoxValue.EndToStart) {
-            onDeleteRequested(transaction)
-            // Dummy step: snap back instead of really removing the item.
-            dismissState.snapTo(SwipeToDismissBoxValue.Settled)
+    val dismissState = rememberSwipeToDismissBoxState(
+        confirmValueChange = { newValue ->
+            if (newValue == SwipeToDismissBoxValue.EndToStart) {
+                if (!hasTriggered) {
+                    hasTriggered = true
+                    onDeleteRequested(transaction)
+                }
+                // Return false to reject the state change.
+                // This automatically triggers the native spring-back animation!
+                false
+            } else {
+                true
+            }
         }
-    }
+    )
 
     SwipeToDismissBox(
         state = dismissState,
