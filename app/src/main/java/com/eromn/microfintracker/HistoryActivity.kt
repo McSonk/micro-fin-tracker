@@ -6,21 +6,14 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import com.eromn.microfintracker.data.AppDatabase
-import com.eromn.microfintracker.data.Transaction
 import com.eromn.microfintracker.data.TransactionRepository
-import com.eromn.microfintracker.ui.components.HistoryMainCanvas
+import com.eromn.microfintracker.ui.components.DashboardScreen
 import com.eromn.microfintracker.viewmodel.HistoryViewModel
 import com.eromn.microfintracker.viewmodel.HistoryViewModelFactory
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 
 class HistoryActivity : AppCompatActivity() {
     private val historyViewModel: HistoryViewModel by viewModels {
@@ -36,9 +29,8 @@ class HistoryActivity : AppCompatActivity() {
             // Retrieve transactions from db
             val transactions by historyViewModel.groupedTransactions.collectAsState(emptyMap())
             // for the "undo" action
-            val snackbarHostState = remember { SnackbarHostState() }
             val scope = rememberCoroutineScope()
-            HistoryMainCanvas(
+            /*HistoryMainCanvas(
                 transactions,
                 snackbarHostState,
                 onToggleRead = { tx -> toggleRead(tx) },
@@ -46,39 +38,27 @@ class HistoryActivity : AppCompatActivity() {
                 onSave = { desc, amount, timestamp ->
                     historyViewModel.logTransaction(desc, amount, timestamp)
                 }
+            )*/
+
+            DashboardScreen(
+                username = "McSonk",           // Later: collect from ViewModel
+                monthlySpent = 950.0,          // Later: collect from ViewModel
+                todaySpent = 500.0,            // Later: collect from ViewModel
+                transactionsByDate = transactions,
+                onLogout = {},
+                onAddTransaction = {},
+                onTransactionClick = {},
+                onDeleteTransaction = { tx -> historyViewModel.deleteTransaction(tx) },
+                onUndoDelete = { tx ->
+                    historyViewModel.logTransaction(
+                        tx.description,
+                        tx.amount,
+                        tx.timestamp
+                    )
+                    Toast.makeText(this@HistoryActivity, "Transaction restored!", Toast.LENGTH_SHORT).show()
+                }
             )
         }//end setContent
     }// end onCreate
 
-    fun deleteTransaction(
-        tx: Transaction,
-        scope: CoroutineScope,
-        snackbarHostState: SnackbarHostState
-    ) {
-        historyViewModel.deleteTransaction(tx)
-        scope.launch {
-            val result = snackbarHostState.showSnackbar(
-                message = "Deleted: ${tx.description}",
-                actionLabel = "UNDO",
-                duration = SnackbarDuration.Long
-            )
-            if (result == SnackbarResult.ActionPerformed) {
-                historyViewModel.logTransaction(
-                    tx.description,
-                    tx.amount,
-                    tx.timestamp
-                )
-                Toast.makeText(this@HistoryActivity, "Transaction restored!", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
-
-    fun toggleRead(tx: Transaction) {
-        if (!tx.isRead) { // Only mark as read if it's currently unread
-            historyViewModel.markAsRead(tx)
-        } else {
-            historyViewModel.markAsUnread(tx)
-        }// end if-else isRead
-    }
-    
 }// end class

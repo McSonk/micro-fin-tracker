@@ -32,6 +32,8 @@ import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
@@ -59,7 +61,9 @@ fun DashboardPreview() {
         transactionsByDate = groupedTransactions,
         onLogout = { },
         onAddTransaction = { },
-        onTransactionClick = { }
+        onTransactionClick = { },
+        {},
+        {}
     )
 }
 
@@ -72,31 +76,25 @@ fun DashboardScreen(
     transactionsByDate: Map<String, List<Transaction>>,
     onLogout: () -> Unit,
     onAddTransaction: () -> Unit,
-    onTransactionClick: (Transaction) -> Unit
+    onTransactionClick: (Transaction) -> Unit,
+    onDeleteTransaction: (Transaction) -> Unit, // <-- Add dummy lambda for preview
+    onUndoDelete: (Transaction) -> Unit         // <-- Add dummy lambda for preview
 ) {
     FinTrackTheme {
         val snackbarHostState = remember { SnackbarHostState() }
         val coroutineScope = rememberCoroutineScope()
 
-        val showDeleteSnackbar: (Transaction) -> Unit = { tx ->
-            coroutineScope.launch {
-                val result = snackbarHostState.showSnackbar(
-                    message = "Item removed",
-                    actionLabel = "Undo",
-                    duration = SnackbarDuration.Long
-                )
-                when (result) {
-                    SnackbarResult.ActionPerformed -> {
-                        // TODO (next step): cancel deletion of tx
-                    }
-                    SnackbarResult.Dismissed -> {
-                        // TODO (next step): commit deletion of tx
-                    }
-                }
-            }
-        }
         Scaffold(
             snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+            topBar = {
+                TopAppBar(
+                    colors = topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.inverseSurface,
+                        titleContentColor = MaterialTheme.colorScheme.inverseOnSurface
+                    ),
+                    title = {}
+                )
+            },
             floatingActionButton = {
                 FloatingActionButton(
                     onClick = onAddTransaction,
@@ -174,7 +172,21 @@ fun DashboardScreen(
                             SwipeableTransactionItem(
                                 transaction = transaction,
                                 onClick = { onTransactionClick(transaction) },
-                                onDeleteRequested = showDeleteSnackbar
+                                onDeleteRequested = { tx ->
+                                    onDeleteTransaction(tx)
+
+                                    coroutineScope.launch{
+                                        val result = snackbarHostState.showSnackbar(
+                                            message = "Deleted: ${tx.description}",
+                                            actionLabel = "UNDO",
+                                            duration = SnackbarDuration.Long
+                                        )
+                                        if (result == SnackbarResult.ActionPerformed) {
+                                            // C. User tapped UNDO
+                                            onUndoDelete(tx)
+                                        }
+                                    }
+                                }
                             )
                             Spacer(modifier = Modifier.height(12.dp))
                         }
