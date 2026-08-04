@@ -46,7 +46,9 @@ class HistoryActivity : AppCompatActivity() {
                 todaySpent = 500.0,            // Later: collect from ViewModel
                 transactionsByDate = transactions,
                 onLogout = {},
-                onAddTransaction = {},
+                onSaveTransaction = { desc, amount, timestamp ->
+                    historyViewModel.logTransaction(desc, amount, timestamp)
+                },
                 onTransactionClick = {},
                 onDeleteTransaction = { tx -> historyViewModel.deleteTransaction(tx) },
                 onUndoDelete = { tx ->

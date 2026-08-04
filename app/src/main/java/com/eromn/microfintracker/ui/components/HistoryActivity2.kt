@@ -34,9 +34,12 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 
 @PreviewLightDark
 @Preview(showBackground = true, showSystemUi = true)
@@ -60,7 +63,7 @@ fun DashboardPreview() {
         todaySpent = 500.0,
         transactionsByDate = groupedTransactions,
         onLogout = { },
-        onAddTransaction = { },
+        onSaveTransaction = { _, _, _ -> },
         onTransactionClick = { },
         {},
         {}
@@ -75,11 +78,13 @@ fun DashboardScreen(
     todaySpent: Double,
     transactionsByDate: Map<String, List<Transaction>>,
     onLogout: () -> Unit,
-    onAddTransaction: () -> Unit,
+    onSaveTransaction: (String, Double, Long) -> Unit,
     onTransactionClick: (Transaction) -> Unit,
-    onDeleteTransaction: (Transaction) -> Unit, // <-- Add dummy lambda for preview
-    onUndoDelete: (Transaction) -> Unit         // <-- Add dummy lambda for preview
+    onDeleteTransaction: (Transaction) -> Unit,
+    onUndoDelete: (Transaction) -> Unit
 ) {
+    var showAddSheet by remember { mutableStateOf(false) }
+
     FinTrackTheme {
         val snackbarHostState = remember { SnackbarHostState() }
         val coroutineScope = rememberCoroutineScope()
@@ -97,7 +102,7 @@ fun DashboardScreen(
             },
             floatingActionButton = {
                 FloatingActionButton(
-                    onClick = onAddTransaction,
+                    onClick = { showAddSheet = true },
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
                     contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                 ) {
@@ -198,6 +203,16 @@ fun DashboardScreen(
                     }
                 }
             }
+        }// end
+
+        if (showAddSheet) {
+            AddTransactionSheet(
+                onDismiss = { showAddSheet = false },
+                onSave = { desc, amount, timestamp ->
+                    onSaveTransaction(desc, amount, timestamp) // Pass data up to Activity
+                    showAddSheet = false // Close the sheet
+                }
+            )
         }
     }
 }
