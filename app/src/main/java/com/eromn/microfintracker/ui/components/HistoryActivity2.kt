@@ -35,6 +35,11 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.eromn.microfintracker.R
 import androidx.compose.foundation.background
 import com.eromn.microfintracker.utils.DateUtils
+import androidx.compose.foundation.layout.Box
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxValue
+import androidx.compose.material3.rememberSwipeToDismissBoxState
+import androidx.compose.ui.draw.clip
 
 @PreviewLightDark
 @Preview(showBackground = true, showSystemUi = true)
@@ -150,7 +155,7 @@ fun DashboardScreen(
                         }
 
                         items(transactions) { transaction ->
-                            TransactionItem(
+                            SwipeableTransactionItem(
                                 transaction = transaction,
                                 onClick = { onTransactionClick(transaction) }
                             )
@@ -182,7 +187,6 @@ private fun TransactionItem(
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp)
     ) {
         Row(
             modifier = Modifier
@@ -212,5 +216,49 @@ private fun TransactionItem(
                 color = MaterialTheme.colorScheme.onSurface
             )
         }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SwipeableTransactionItem(
+    transaction: Transaction,
+    onClick: () -> Unit
+) {
+    val dismissState = rememberSwipeToDismissBoxState(
+        confirmValueChange = { value ->
+            if (value == SwipeToDismissBoxValue.EndToStart) {
+                // TODO (next step): call onDelete(transaction) and return true
+                false // for now: never delete, always spring back
+            } else {
+                true
+            }
+        }
+    )
+
+    SwipeToDismissBox(
+        state = dismissState,
+        enableDismissFromStartToEnd = false, // right swipe reserved for future "Edit"
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        backgroundContent = {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(MaterialTheme.colorScheme.errorContainer),
+                contentAlignment = Alignment.CenterEnd
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_delete),
+                    contentDescription = "Delete",
+                    tint = MaterialTheme.colorScheme.onErrorContainer,
+                    modifier = Modifier.padding(end = 24.dp)
+                )
+            }
+        }
+    ) {
+        TransactionItem(transaction = transaction, onClick = onClick)
     }
 }
