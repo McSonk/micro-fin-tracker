@@ -8,7 +8,6 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
 import com.eromn.microfintracker.data.AppDatabase
 import com.eromn.microfintracker.data.TransactionRepository
 import com.eromn.microfintracker.ui.components.DashboardScreen
@@ -28,17 +27,6 @@ class HistoryActivity : AppCompatActivity() {
         setContent {
             // Retrieve transactions from db
             val transactions by historyViewModel.groupedTransactions.collectAsState(emptyMap())
-            // for the "undo" action
-            val scope = rememberCoroutineScope()
-            /*HistoryMainCanvas(
-                transactions,
-                snackbarHostState,
-                onToggleRead = { tx -> toggleRead(tx) },
-                onDelete = { tx -> deleteTransaction(tx, scope, snackbarHostState) },
-                onSave = { desc, amount, timestamp ->
-                    historyViewModel.logTransaction(desc, amount, timestamp)
-                }
-            )*/
 
             DashboardScreen(
                 username = "McSonk",           // Later: collect from ViewModel

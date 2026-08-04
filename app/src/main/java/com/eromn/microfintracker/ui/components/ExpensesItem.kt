@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.sp
 import com.eromn.microfintracker.R
 import com.eromn.microfintracker.data.Transaction
 import com.eromn.microfintracker.utils.DateUtils
+import androidx.compose.runtime.LaunchedEffect
 
 @Composable
 private fun TransactionItem(
@@ -91,7 +92,10 @@ fun SwipeableTransactionItem(
 ) {
     // Flag to ensure the side-effect only fires once per swipe,
     // even if the swipe machinery consults confirmValueChange multiple times during the settle animation.
-    var hasTriggered by remember { mutableStateOf(false) }
+    // By passing transaction.id, we tell Compose: "If the ID changes, throw away the
+    // old state and create a fresh one." This prevents hasTriggered from staying 'true'
+    // if the UI is recycled for a different transaction.
+    var hasTriggered by remember(transaction.id) { mutableStateOf(false) }
 
     val dismissState = rememberSwipeToDismissBoxState(
         confirmValueChange = { newValue ->
@@ -108,6 +112,13 @@ fun SwipeableTransactionItem(
             }
         }
     )
+
+    // If this transaction is "Undo"ed and re-added to the list, or if Compose recycles
+    // this row for a newly added transaction, this guarantees the swipe offset is
+    // visually reset to 0, preventing the "idle/stuck" bug.
+    LaunchedEffect(transaction.id) {
+        dismissState.reset()
+    }
 
     SwipeToDismissBox(
         state = dismissState,

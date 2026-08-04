@@ -173,7 +173,7 @@ fun DashboardScreen(
                             )
                         }
 
-                        items(transactions) { transaction ->
+                        items(items = transactions, key = {it.id} ) { transaction ->
                             SwipeableTransactionItem(
                                 transaction = transaction,
                                 onClick = { onTransactionClick(transaction) },
