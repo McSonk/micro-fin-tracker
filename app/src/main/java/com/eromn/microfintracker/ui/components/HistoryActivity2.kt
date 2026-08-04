@@ -1,6 +1,5 @@
 package com.eromn.microfintracker.ui.components
 
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -27,19 +26,23 @@ import com.eromn.microfintracker.ui.theme.FinTrackTheme
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.eromn.microfintracker.R
-import androidx.compose.foundation.background
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import android.app.Activity
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.platform.LocalView
+import androidx.core.view.WindowCompat
+import androidx.compose.foundation.layout.navigationBars
 
 @PreviewLightDark
 @Preview(showBackground = true, showSystemUi = true)
@@ -86,20 +89,25 @@ fun DashboardScreen(
     var showAddSheet by remember { mutableStateOf(false) }
 
     FinTrackTheme {
+        val darkTheme = isSystemInDarkTheme()
+        val view = LocalView.current
+        if (!view.isInEditMode) {
+            SideEffect {
+                val window = (view.context as Activity).window
+                // If darkTheme is true, inverseSurface is light -> we need dark icons (true)
+                // If darkTheme is false, inverseSurface is dark -> we need light icons (false)
+                WindowCompat.getInsetsController(window, view)
+                    .isAppearanceLightStatusBars = darkTheme
+            }
+        }
+
         val snackbarHostState = remember { SnackbarHostState() }
         val coroutineScope = rememberCoroutineScope()
 
         Scaffold(
+            containerColor = MaterialTheme.colorScheme.background,
+            contentWindowInsets = WindowInsets.navigationBars,
             snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
-            topBar = {
-                TopAppBar(
-                    colors = topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.inverseSurface,
-                        titleContentColor = MaterialTheme.colorScheme.inverseOnSurface
-                    ),
-                    title = {}
-                )
-            },
             floatingActionButton = {
                 FloatingActionButton(
                     onClick = { showAddSheet = true },
@@ -124,19 +132,12 @@ fun DashboardScreen(
                 LazyColumn(modifier = Modifier.fillMaxSize()) {
                     // TOP ZONE: contrasting panel, scrolls away with the content
                     item {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(MaterialTheme.colorScheme.inverseSurface)
-                                .padding(bottom = 16.dp)
-                        ) {
-                            UpperHeader(
-                                username,
-                                onLogout,
-                                monthlySpent,
-                                todaySpent
-                            )
-                        }
+                        UpperHeader(
+                            username,
+                            onLogout,
+                            monthlySpent,
+                            todaySpent
+                        )
                     }
 
                     // Category Chips (bottom zone, line sits just above them)
