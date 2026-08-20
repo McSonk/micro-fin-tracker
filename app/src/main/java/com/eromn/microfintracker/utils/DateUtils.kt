@@ -89,6 +89,28 @@ class DateUtils {
                 .toEpochMilli()
         }
 
+        fun getUtcMidnightForLocalDate(timestamp: Long): Long {
+            val localDate = LocalDateTime
+                .ofInstant(Instant.ofEpochMilli(timestamp), ZoneId.systemDefault())
+                .toLocalDate()
+            return localDate
+                .atStartOfDay(ZoneId.of("UTC"))
+                .toInstant()
+                .toEpochMilli()
+        }
+
+        fun getLocalHour(timestamp: Long): Int {
+            return LocalDateTime
+                .ofInstant(Instant.ofEpochMilli(timestamp), ZoneId.systemDefault())
+                .hour
+        }
+
+        fun getLocalMinute(timestamp: Long): Int {
+            return LocalDateTime
+                .ofInstant(Instant.ofEpochMilli(timestamp), ZoneId.systemDefault())
+                .minute
+        }
+
         fun getBeginingEndOfDay(timestamp: Long): Pair<Long, Long> {
             val calendar = Calendar.getInstance()
             calendar.timeInMillis = timestamp

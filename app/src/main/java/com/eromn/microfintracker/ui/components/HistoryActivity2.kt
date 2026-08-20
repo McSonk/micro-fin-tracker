@@ -65,11 +65,13 @@ fun DashboardPreview() {
         monthlySpent = 950.0,
         todaySpent = 500.0,
         transactionsByDate = groupedTransactions,
+        editingTransaction = null,
         onLogout = { },
-        onSaveTransaction = { _, _, _ -> },
+        onSaveTransaction = { _ -> },
         onTransactionClick = { },
-        {},
-        {}
+        onDeleteTransaction = { },
+        onUndoDelete = { },
+        onDismissTransactionSheet = { }
     )
 }
 
@@ -80,11 +82,13 @@ fun DashboardScreen(
     monthlySpent: Double,
     todaySpent: Double,
     transactionsByDate: Map<String, List<Transaction>>,
+    editingTransaction: Transaction?,
     onLogout: () -> Unit,
-    onSaveTransaction: (String, Double, Long) -> Unit,
+    onSaveTransaction: (Transaction) -> Unit,
     onTransactionClick: (Transaction) -> Unit,
     onDeleteTransaction: (Transaction) -> Unit,
-    onUndoDelete: (Transaction) -> Unit
+    onUndoDelete: (Transaction) -> Unit,
+    onDismissTransactionSheet: () -> Unit
 ) {
     var showAddSheet by remember { mutableStateOf(false) }
 
@@ -204,14 +208,18 @@ fun DashboardScreen(
                     }
                 }
             }
-        }// end
+        }
 
-        if (showAddSheet) {
+        if (showAddSheet || editingTransaction != null) {
             AddTransactionSheet(
-                onDismiss = { showAddSheet = false },
-                onSave = { desc, amount, timestamp ->
-                    onSaveTransaction(desc, amount, timestamp) // Pass data up to Activity
-                    showAddSheet = false // Close the sheet
+                initialTransaction = editingTransaction,
+                onDismiss = {
+                    showAddSheet = false
+                    onDismissTransactionSheet()
+                },
+                onSave = { transaction ->
+                    showAddSheet = false
+                    onSaveTransaction(transaction)
                 }
             )
         }
