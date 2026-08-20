@@ -43,6 +43,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.eromn.microfintracker.R
+import com.eromn.microfintracker.data.Category
 import com.eromn.microfintracker.data.Transaction
 import com.eromn.microfintracker.utils.DateUtils
 import java.util.Calendar
@@ -71,6 +72,8 @@ fun AddTransactionPreview(){
         datePickerState = datePickerState,
         timePickerState = timePickerState,
         initialTransaction = null,
+        selectedCategory = Category.OTHERS,
+        onCategoryFieldClicked = { },
         onSave = { _ -> }
     )
 }// end AddTransactionPreview
@@ -79,6 +82,14 @@ fun AddTransactionPreview(){
 @Composable
 fun AddTransactionSheet(
     initialTransaction: Transaction? = null,
+    selectedCategory: Category,
+    isCategoryPickerVisible: Boolean,
+    categorySearchQuery: String,
+    filteredCategories: List<Category>,
+    onCategoryFieldClicked: () -> Unit,
+    onCategorySearchQueryChanged: (String) -> Unit,
+    onCategorySelected: (Category) -> Unit,
+    onDismissCategoryPicker: () -> Unit,
     onDismiss: () -> Unit,
     onSave: (Transaction) -> Unit
 ) {
@@ -122,6 +133,8 @@ fun AddTransactionSheet(
 
         AddTransactionForm(
             initialTransaction = initialTransaction,
+            selectedCategory = selectedCategory,
+            onCategoryFieldClicked = onCategoryFieldClicked,
             launchDatePicker = { showDatePicker = true },
             launchTimePicker = { showTimePicker = true },
             datePickerState = datePickerState,
@@ -155,6 +168,17 @@ fun AddTransactionSheet(
             }// end timePickerDialog
         }// end time modal
     } // end ModalBottomSheet
+
+    if (isCategoryPickerVisible) {
+        CategoryPickerDialog(
+            categories = filteredCategories,
+            selectedCategoryId = selectedCategory.serverId,
+            searchQuery = categorySearchQuery,
+            onSearchQueryChange = onCategorySearchQueryChanged,
+            onCategorySelected = onCategorySelected,
+            onDismiss = onDismissCategoryPicker
+        )
+    }
 }// end AddTransactionSheet
 
 // Externalise component so we can preview it
@@ -166,6 +190,8 @@ fun AddTransactionForm(
     launchDatePicker: () -> Unit,
     launchTimePicker: () -> Unit,
     initialTransaction: Transaction? = null,
+    selectedCategory: Category,
+    onCategoryFieldClicked: () -> Unit,
     onDismiss: () -> Unit,
     onSave: (Transaction) -> Unit,
 ) {
@@ -249,6 +275,36 @@ fun AddTransactionForm(
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             singleLine = true
         )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Category field
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onCategoryFieldClicked() }
+        ) {
+            OutlinedTextField(
+                value = selectedCategory.displayName,
+                onValueChange = {},
+                label = { Text(stringResource(R.string.select_category_title)) },
+                modifier = Modifier.fillMaxWidth(),
+                readOnly = true,
+                enabled = false,
+                trailingIcon = {
+                    Icon(
+                        painter = painterResource(android.R.drawable.arrow_down_float),
+                        contentDescription = null
+                    )
+                },
+                colors = OutlinedTextFieldDefaults.colors(
+                    disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                    disabledBorderColor = MaterialTheme.colorScheme.outline,
+                    disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    disabledTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            )
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -337,11 +393,13 @@ fun AddTransactionForm(
                         val transactionToSave = initialTransaction?.copy(
                             description = description.trim(),
                             amount = amountDouble,
-                            timestamp = selectedMillis
+                            timestamp = selectedMillis,
+                            categoryId = selectedCategory.serverId
                         ) ?: Transaction(
                             description = description.trim(),
                             amount = amountDouble,
-                            timestamp = selectedMillis
+                            timestamp = selectedMillis,
+                            categoryId = selectedCategory.serverId
                         )
 
                         onSave(transactionToSave)
