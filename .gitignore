@@ -23,3 +23,6 @@ local.properties
 .idea/dictionaries/
 .idea/httpRequests/
 .idea/deploymentTargetSelector.xml
+
+# Personal
+pendientes.md
