@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import com.eromn.microfintracker.R
 import com.eromn.microfintracker.data.Category
 import com.eromn.microfintracker.data.Transaction
+import com.eromn.microfintracker.ui.extensions.iconRes
 import com.eromn.microfintracker.utils.DateUtils
 import java.util.Calendar
 
@@ -298,7 +299,7 @@ fun AddTransactionForm(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Category field
+        // Category field with Leading Icon ---
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -311,6 +312,13 @@ fun AddTransactionForm(
                 modifier = Modifier.fillMaxWidth(),
                 readOnly = true,
                 enabled = false,
+                leadingIcon = {
+                    Icon(
+                        painter = painterResource(id = selectedCategory.iconRes),
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary // Keep it vibrant
+                    )
+                },
                 trailingIcon = {
                     Icon(
                         painter = painterResource(R.drawable.ic_arrow_drop_down_24),
@@ -321,6 +329,7 @@ fun AddTransactionForm(
                     disabledTextColor = MaterialTheme.colorScheme.onSurface,
                     disabledBorderColor = MaterialTheme.colorScheme.outline,
                     disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    disabledLeadingIconColor = MaterialTheme.colorScheme.primary,
                     disabledTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             )
