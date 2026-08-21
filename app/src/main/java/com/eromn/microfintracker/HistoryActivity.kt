@@ -11,6 +11,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import com.eromn.microfintracker.data.AppDatabase
 import com.eromn.microfintracker.data.TransactionRepository
+import com.eromn.microfintracker.data.repository.CategoryRepositoryImpl
 import com.eromn.microfintracker.ui.components.DashboardScreen
 import com.eromn.microfintracker.viewmodel.HistoryViewModel
 import com.eromn.microfintracker.viewmodel.HistoryViewModelFactory
@@ -21,7 +22,8 @@ import com.eromn.microfintracker.viewmodel.HistoryViewModelFactory
 class HistoryActivity : AppCompatActivity() {
     private val historyViewModel: HistoryViewModel by viewModels {
         HistoryViewModelFactory(
-            TransactionRepository(AppDatabase.getDatabase(applicationContext).transactionDao())
+            TransactionRepository(AppDatabase.getDatabase(applicationContext).transactionDao()),
+            CategoryRepositoryImpl()
         )
     }
 
@@ -35,6 +37,10 @@ class HistoryActivity : AppCompatActivity() {
             val transactions by historyViewModel.groupedTransactions.collectAsState(emptyMap())
             val editingTransaction by historyViewModel.editingTransaction.collectAsState()
             val saveFailed by historyViewModel.saveFailed.collectAsState()
+            val filteredCategories by historyViewModel.filteredCategoryOptions.collectAsState(emptyList())
+            val selectedCategory by historyViewModel.selectedCategory.collectAsState()
+            val isCategoryPickerVisible by historyViewModel.isCategoryPickerVisible.collectAsState()
+            val categorySearchQuery by historyViewModel.categorySearchQuery.collectAsState()
 
             LaunchedEffect(saveFailed) {
                 if (saveFailed) {
@@ -62,16 +68,21 @@ class HistoryActivity : AppCompatActivity() {
                 },
                 onDeleteTransaction = { tx -> historyViewModel.deleteTransaction(tx) },
                 onUndoDelete = { tx ->
-                    historyViewModel.logTransaction(
-                        tx.description,
-                        tx.amount,
-                        tx.timestamp
-                    )
+                    historyViewModel.restoreTransaction(tx)
                     Toast.makeText(this@HistoryActivity, "Transaction restored!", Toast.LENGTH_SHORT).show()
                 },
                 onDismissTransactionSheet = {
                     historyViewModel.clearEditing()
-                }
+                },
+                selectedCategory = selectedCategory,
+                isCategoryPickerVisible = isCategoryPickerVisible,
+                categorySearchQuery = categorySearchQuery,
+                filteredCategories = filteredCategories,
+                onAddTransactionRequested = { historyViewModel.startAdding() },
+                onCategoryFieldClicked = { historyViewModel.showCategoryPicker() },
+                onCategorySearchQueryChanged = { historyViewModel.onCategorySearchQueryChanged(it) },
+                onCategorySelected = { historyViewModel.selectCategory(it) },
+                onDismissCategoryPicker = { historyViewModel.dismissCategoryPicker() }
             )
         }
     }

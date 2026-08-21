@@ -22,6 +22,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.eromn.microfintracker.data.Transaction
+import com.eromn.microfintracker.data.Category
 import com.eromn.microfintracker.ui.theme.FinTrackTheme
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
@@ -74,7 +75,16 @@ fun DashboardPreview() {
         onTransactionClick = { },
         onDeleteTransaction = { },
         onUndoDelete = { },
-        onDismissTransactionSheet = { }
+        onDismissTransactionSheet = { },
+        selectedCategory = Category.OTHERS,
+        isCategoryPickerVisible = false,
+        categorySearchQuery = "",
+        filteredCategories = emptyList(),
+        onAddTransactionRequested = { },
+        onCategoryFieldClicked = { },
+        onCategorySearchQueryChanged = { },
+        onCategorySelected = { },
+        onDismissCategoryPicker = { }
     )
 }
 
@@ -106,7 +116,16 @@ fun DashboardScreen(
     onTransactionClick: (Transaction) -> Unit,
     onDeleteTransaction: (Transaction) -> Unit,
     onUndoDelete: (Transaction) -> Unit,
-    onDismissTransactionSheet: () -> Unit
+    onDismissTransactionSheet: () -> Unit,
+    selectedCategory: Category,
+    isCategoryPickerVisible: Boolean,
+    categorySearchQuery: String,
+    filteredCategories: List<Category>,
+    onAddTransactionRequested: () -> Unit,
+    onCategoryFieldClicked: () -> Unit,
+    onCategorySearchQueryChanged: (String) -> Unit,
+    onCategorySelected: (Category) -> Unit,
+    onDismissCategoryPicker: () -> Unit
 ) {
     var showAddSheet by remember { mutableStateOf(false) }
 
@@ -132,7 +151,10 @@ fun DashboardScreen(
             snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
             floatingActionButton = {
                 FloatingActionButton(
-                    onClick = { showAddSheet = true },
+                    onClick = {
+                        onAddTransactionRequested()
+                        showAddSheet = true
+                    },
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
                     contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                 ) {
@@ -231,6 +253,14 @@ fun DashboardScreen(
         if (showAddSheet || editingTransaction != null) {
             AddTransactionSheet(
                 initialTransaction = editingTransaction,
+                selectedCategory = selectedCategory,
+                isCategoryPickerVisible = isCategoryPickerVisible,
+                categorySearchQuery = categorySearchQuery,
+                filteredCategories = filteredCategories,
+                onCategoryFieldClicked = onCategoryFieldClicked,
+                onCategorySearchQueryChanged = onCategorySearchQueryChanged,
+                onCategorySelected = onCategorySelected,
+                onDismissCategoryPicker = onDismissCategoryPicker,
                 onDismiss = {
                     showAddSheet = false
                     onDismissTransactionSheet()
