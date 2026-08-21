@@ -1,6 +1,8 @@
 package com.eromn.microfintracker.ui.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,6 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -21,18 +24,72 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import androidx.compose.runtime.remember
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.window.DialogProperties
 import com.eromn.microfintracker.R
 import com.eromn.microfintracker.data.Category
+import com.eromn.microfintracker.ui.extensions.iconRes
+import com.eromn.microfintracker.ui.theme.FinTrackTheme
 
+/**
+ * Preview for [CategoryPickerDialog] with a sample list of categories.
+ */
+@Preview(showBackground = true, widthDp = 360, heightDp = 600)
+@Composable
+fun CategoryPickerDialogPreview() {
+    FinTrackTheme {
+        CategoryPickerDialog(
+            categories = listOf(
+                Category.TRANSPORT,
+                Category.FOOD,
+                Category.ENTERTAINMENT,
+                Category.HEALTH,
+                Category.OTHERS
+            ),
+            selectedCategoryId = Category.FOOD.serverId, // Simulates "Food" being selected
+            searchQuery = "",
+            onSearchQueryChange = {},
+            onCategorySelected = {},
+            onDismiss = {}
+        )
+    }
+}
+
+/**
+ * Preview for [CategoryPickerDialog] when the search yields no results.
+ */
+@Preview(showBackground = true, widthDp = 360, heightDp = 600)
+@Composable
+fun CategoryPickerDialogEmptySearchPreview() {
+    FinTrackTheme {
+        CategoryPickerDialog(
+            categories = emptyList(), // Simulates no search results
+            selectedCategoryId = Category.OTHERS.serverId,
+            searchQuery = "xyz", // Simulates an active search query
+            onSearchQueryChange = {},
+            onCategorySelected = {},
+            onDismiss = {}
+        )
+    }
+}
+
+/**
+ * Dialog that allows the user to pick a category from a list.
+ *
+ * @param categories The list of categories to display.
+ * @param selectedCategoryId The server ID of the currently selected category.
+ * @param searchQuery The current search query text.
+ * @param onSearchQueryChange Callback invoked when the search query changes.
+ * @param onCategorySelected Callback invoked when a category is selected.
+ * @param onDismiss Callback invoked when the dialog is dismissed.
+ */
 @Composable
 fun CategoryPickerDialog(
     categories: List<Category>,
@@ -94,9 +151,27 @@ fun CategoryPickerDialog(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clickable { onCategorySelected(category) }
-                                    .padding(vertical = 12.dp, horizontal = 8.dp),
+                                    .padding(vertical = 8.dp, horizontal = 8.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
+                                // Category Icon Badge
+                                Box(
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                        .clip(CircleShape)
+                                        .background(MaterialTheme.colorScheme.primaryContainer),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        painter = painterResource(id = category.iconRes),
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                }
+                                
+                                Spacer(modifier = Modifier.width(12.dp))
+
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(
                                         text = category.displayName,
@@ -120,7 +195,7 @@ fun CategoryPickerDialog(
                                         painter = painterResource(R.drawable.ic_check),
                                         contentDescription = stringResource(R.string.category_selected_content_description),
                                         tint = MaterialTheme.colorScheme.primary,
-                                        modifier = Modifier.size(20.dp)
+                                        modifier = Modifier.size(24.dp)
                                     )
                                 }
                             }
