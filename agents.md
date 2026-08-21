@@ -6,7 +6,7 @@ This is a modern, offline-first Android application written in Kotlin.
 **Future State:** Will integrate with a FastAPI backend. The architecture MUST support a seamless transition to client-server without breaking the UI/ViewModel layers.
 
 ## 2. Tech Stack & Dependencies
-- **Language:** Kotlin 2.2.10 (Strict mode, no Java).
+- **Language:** Kotlin 2.2.10 (Strict mode, no Java. Kotlin source only; target JVM 11).
 - **UI:** Jetpack Compose (Material 3). Compose BOM 2025.12.00. 
 - **Architecture:** MVVM with Clean Architecture principles (Repository Pattern).
 - **Asynchronous:** Kotlin Coroutines and Flow (`StateFlow`/`SharedFlow`). NO `LiveData`.

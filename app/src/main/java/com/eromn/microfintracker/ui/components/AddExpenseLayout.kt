@@ -342,7 +342,7 @@ fun AddTransactionForm(
             }
             Spacer(modifier = Modifier.width(8.dp))
             val amountDouble = amount.toDoubleOrNull() ?: 0.0
-            val isValid = description.isNotBlank() && amountDouble > 0
+            val isValid = description.isNotBlank() && amountDouble.isFinite() && amountDouble > 0
             Button(
                 enabled = isValid,
                 onClick = {
