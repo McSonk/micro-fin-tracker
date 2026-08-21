@@ -20,11 +20,23 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.launch
 
+/**
+ * ViewModel for the history screen. Exposes the transaction list grouped by header date,
+ * handles CRUD operations, and manages the state of the transaction being edited.
+ */
 class HistoryViewModel(
     private val repository: TransactionRepository,
     private val categoryRepository: CategoryRepository
 ) : ViewModel() {
+
+    /**
+     * All transactions from the repository as a Flow.
+     */
     val allTransactions: Flow<List<Transaction>> = repository.allTransactions
+
+    /**
+     * Transactions grouped by header label (e.g. "Hoy", "Ayer", full date).
+     */
     val groupedTransactions: Flow<Map<String, List<Transaction>>> = allTransactions
         .map { list ->
             list.groupBy { DateUtils.formatHeaderDate(it.timestamp) }
@@ -32,9 +44,17 @@ class HistoryViewModel(
         .flowOn(Dispatchers.Default)
 
     private val _editingTransaction = MutableStateFlow<Transaction?>(null)
+
+    /**
+     * The transaction currently being edited, if any.
+     */
     val editingTransaction: StateFlow<Transaction?> = _editingTransaction.asStateFlow()
 
     private val _saveFailed = MutableStateFlow(false)
+
+    /**
+     * True if the last save operation failed.
+     */
     val saveFailed: StateFlow<Boolean> = _saveFailed.asStateFlow()
 
     // Category picker state
@@ -74,7 +94,9 @@ class HistoryViewModel(
         }
     }
 
-    // Existing transaction operations
+    /**
+     * Logs a new transaction with the given description, amount, and optional timestamp.
+     */
     fun logTransaction(
         description: String,
         amount: Double,
@@ -88,16 +110,25 @@ class HistoryViewModel(
         repository.insert(newTransaction)
     }
 
+    /**
+     * Marks the given transaction as read.
+     */
     fun markAsRead(transaction: Transaction) = viewModelScope.launch(Dispatchers.IO) {
         val updatedTransaction = transaction.copy(isRead = true)
         repository.updateTransaction(updatedTransaction)
     }
 
+    /**
+     * Marks the given transaction as unread.
+     */
     fun markAsUnread(transaction: Transaction) = viewModelScope.launch(Dispatchers.IO) {
         val updatedTransaction = transaction.copy(isRead = false)
         repository.updateTransaction(updatedTransaction)
     }
 
+    /**
+     * Deletes the given transaction.
+     */
     fun deleteTransaction(transaction: Transaction) = viewModelScope.launch(Dispatchers.IO) {
         repository.delete(transaction)
     }
@@ -114,6 +145,9 @@ class HistoryViewModel(
         _saveFailed.value = false
     }
 
+    /**
+     * Starts editing the provided transaction; resets any previous save error.
+     */
     fun startEditing(transaction: Transaction) {
         _saveFailed.value = false
         _editingTransaction.value = transaction
@@ -122,6 +156,9 @@ class HistoryViewModel(
         _categorySearchQuery.value = ""
     }
 
+    /**
+     * Clears the current editing state and any save error.
+     */
     fun clearEditing() {
         _editingTransaction.value = null
         _saveFailed.value = false
@@ -130,10 +167,17 @@ class HistoryViewModel(
         _categorySearchQuery.value = ""
     }
 
+    /**
+     * Clears only the save error flag.
+     */
     fun clearSaveError() {
         _saveFailed.value = false
     }
 
+    /**
+     * Inserts a new transaction (id == 0) or updates an existing one.
+     * Sets [saveFailed] to true if the operation throws an exception.
+     */
     fun saveTransaction(transaction: Transaction) = viewModelScope.launch(Dispatchers.IO) {
         try {
             val normalizedTransaction = transaction.copy(
@@ -173,10 +217,16 @@ class HistoryViewModel(
     }
 }
 
+/**
+ * Factory to create [HistoryViewModel] with a manually injected repository.
+ */
 class HistoryViewModelFactory(
     private val repository: TransactionRepository,
     private val categoryRepository: CategoryRepository
 ) : ViewModelProvider.Factory {
+    /**
+     * Creates a new instance of [HistoryViewModel].
+     */
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(HistoryViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")

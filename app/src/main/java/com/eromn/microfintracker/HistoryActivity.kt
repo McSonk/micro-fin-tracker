@@ -16,6 +16,9 @@ import com.eromn.microfintracker.ui.components.DashboardScreen
 import com.eromn.microfintracker.viewmodel.HistoryViewModel
 import com.eromn.microfintracker.viewmodel.HistoryViewModelFactory
 
+/**
+ * Activity that hosts the history dashboard screen and wires it to [HistoryViewModel].
+ */
 class HistoryActivity : AppCompatActivity() {
     private val historyViewModel: HistoryViewModel by viewModels {
         HistoryViewModelFactory(
@@ -24,6 +27,9 @@ class HistoryActivity : AppCompatActivity() {
         )
     }
 
+    /**
+     * Called when the activity is starting. Sets up the Compose UI and observes the ViewModel state.
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()

@@ -45,6 +45,9 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 import androidx.compose.foundation.layout.navigationBars
 
+/**
+ * Preview of [DashboardScreen] with sample data.
+ */
 @PreviewLightDark
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
@@ -85,6 +88,21 @@ fun DashboardPreview() {
     )
 }
 
+/**
+ * Main dashboard screen for the history feature.
+ *
+ * @param username name of the logged-in user, shown in the header.
+ * @param monthlySpent total monthly spending shown in the header.
+ * @param todaySpent total spending today shown in the header.
+ * @param transactionsByDate transactions grouped by a header label (e.g. "Hoy", "Ayer").
+ * @param editingTransaction transaction currently being edited, if any.
+ * @param onLogout callback when the user requests to log out.
+ * @param onSaveTransaction callback invoked with a transaction to save (create or update).
+ * @param onTransactionClick callback invoked when a transaction item is clicked, typically to edit it.
+ * @param onDeleteTransaction callback invoked when a transaction should be deleted.
+ * @param onUndoDelete callback invoked when the user taps UNDO after a delete snackbar.
+ * @param onDismissTransactionSheet callback invoked when the transaction edit/add sheet is dismissed.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
