@@ -8,9 +8,17 @@ import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Locale
 
+/**
+ * Utility methods for date and time conversions and formatting used across the app.
+ */
 class DateUtils {
     companion object {
         private val mxLocal = Locale.Builder().setLanguage("es").setRegion("MX").build()
+
+        /**
+         * Formats a timestamp (milliseconds) as a local time string using the Spanish locale.
+         * Example: "3:45 p. m.".
+         */
         fun formatTime(timestamp: Long): String {
             val instant = Instant.ofEpochMilli(timestamp)
             val localDateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault())
@@ -19,6 +27,9 @@ class DateUtils {
             return localDateTime.format(formatter)
         }
 
+        /**
+         * Formats an hour and minute into a local time string using [formatTime].
+         */
         fun formatTime(hour: Int, minute: Int): String {
             val cal = Calendar.getInstance()
             cal.set(Calendar.HOUR_OF_DAY, hour)
@@ -28,6 +39,10 @@ class DateUtils {
             return formatTime(cal.timeInMillis )
         }
 
+        /**
+         * Formats a UTC-based timestamp (milliseconds) as a date string in Spanish.
+         * Example: "15 de jul.".
+         */
         fun formatDateUTC(timestamp: Long): String {
             val instant = Instant.ofEpochMilli(timestamp)
             val localDateTime = LocalDateTime.ofInstant(instant, ZoneId.of("UTC"))
@@ -36,6 +51,10 @@ class DateUtils {
             return localDateTime.format(formatter)
         }
 
+        /**
+         * Returns a human-friendly header label for a timestamp relative to today.
+         * Possible outputs include "Hoy", "Ayer, 15 de jul.", "Ante ayer, ...", or the full date.
+         */
         fun formatHeaderDate(timestamp: Long): String {
             val date = LocalDateTime.ofInstant(Instant.ofEpochMilli(timestamp), ZoneId.systemDefault()).toLocalDate()
             val now = LocalDateTime.now(ZoneId.systemDefault()).toLocalDate()
@@ -51,6 +70,9 @@ class DateUtils {
             }
         }
 
+        /**
+         * Returns the absolute duration between two timestamps formatted as "H:mm".
+         */
         fun timeBetween(date1: Long, date2: Long): String {
             val instant1 = Instant.ofEpochMilli(date1)
             val instant2 = Instant.ofEpochMilli(date2)
@@ -64,6 +86,9 @@ class DateUtils {
             return String.format(Locale.getDefault(), "%d:%02d", hours, minutes)
         }
 
+        /**
+         * Adds the given number of hours to the provided timestamp.
+         */
         fun addHours(timestamp: Long, hours: Int): Long{
             val calendar = Calendar.getInstance()
             calendar.timeInMillis = timestamp
@@ -72,6 +97,10 @@ class DateUtils {
             return calendar.timeInMillis
         }
 
+        /**
+         * Combines a UTC date (milliseconds at UTC midnight) with a local hour/minute
+         * and returns the correct epoch milliseconds in the device's time zone.
+         */
         fun mergeDateTimeUTC(utcDate: Long, hour: Int, minute: Int): Long {
             val utcInstant = Instant.ofEpochMilli(utcDate)
             val localDate = LocalDateTime.ofInstant(utcInstant, ZoneId.of("UTC")).toLocalDate()
@@ -81,6 +110,9 @@ class DateUtils {
             return localDateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
         }
 
+        /**
+         * Returns today's midnight timestamp in UTC.
+         */
         fun getTodayUtcMidnight(): Long {
             val now = LocalDateTime.now()
             return now.toLocalDate()
@@ -89,6 +121,41 @@ class DateUtils {
                 .toEpochMilli()
         }
 
+        /**
+         * Returns the UTC midnight timestamp corresponding to the local date of the given timestamp.
+         */
+        fun getUtcMidnightForLocalDate(timestamp: Long): Long {
+            val localDate = LocalDateTime
+                .ofInstant(Instant.ofEpochMilli(timestamp), ZoneId.systemDefault())
+                .toLocalDate()
+            return localDate
+                .atStartOfDay(ZoneId.of("UTC"))
+                .toInstant()
+                .toEpochMilli()
+        }
+
+        /**
+         * Returns the hour component of the given timestamp in the local time zone.
+         */
+        fun getLocalHour(timestamp: Long): Int {
+            return LocalDateTime
+                .ofInstant(Instant.ofEpochMilli(timestamp), ZoneId.systemDefault())
+                .hour
+        }
+
+        /**
+         * Returns the minute component of the given timestamp in the local time zone.
+         */
+        fun getLocalMinute(timestamp: Long): Int {
+            return LocalDateTime
+                .ofInstant(Instant.ofEpochMilli(timestamp), ZoneId.systemDefault())
+                .minute
+        }
+
+        /**
+         * Returns the start and end of the local day for the given timestamp, as a pair of
+         * epoch milliseconds representing 00:00:00.000 and 23:59:59.999 on that day.
+         */
         fun getBeginingEndOfDay(timestamp: Long): Pair<Long, Long> {
             val calendar = Calendar.getInstance()
             calendar.timeInMillis = timestamp
@@ -109,7 +176,9 @@ class DateUtils {
 
         }
 
-        // just for show in UI
+        /**
+         * Returns the epoch milliseconds for today at the provided local hour and minute.
+         */
         fun getTodayAt(hour: Int, minute: Int = 0): Long {
             return Calendar.getInstance().apply {
                 set(Calendar.HOUR_OF_DAY, hour)

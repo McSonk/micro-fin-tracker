@@ -44,6 +44,9 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 import androidx.compose.foundation.layout.navigationBars
 
+/**
+ * Preview of [DashboardScreen] with sample data.
+ */
 @PreviewLightDark
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
@@ -65,14 +68,31 @@ fun DashboardPreview() {
         monthlySpent = 950.0,
         todaySpent = 500.0,
         transactionsByDate = groupedTransactions,
+        editingTransaction = null,
         onLogout = { },
-        onSaveTransaction = { _, _, _ -> },
+        onSaveTransaction = { _ -> },
         onTransactionClick = { },
-        {},
-        {}
+        onDeleteTransaction = { },
+        onUndoDelete = { },
+        onDismissTransactionSheet = { }
     )
 }
 
+/**
+ * Main dashboard screen for the history feature.
+ *
+ * @param username name of the logged-in user, shown in the header.
+ * @param monthlySpent total monthly spending shown in the header.
+ * @param todaySpent total spending today shown in the header.
+ * @param transactionsByDate transactions grouped by a header label (e.g. "Hoy", "Ayer").
+ * @param editingTransaction transaction currently being edited, if any.
+ * @param onLogout callback when the user requests to log out.
+ * @param onSaveTransaction callback invoked with a transaction to save (create or update).
+ * @param onTransactionClick callback invoked when a transaction item is clicked, typically to edit it.
+ * @param onDeleteTransaction callback invoked when a transaction should be deleted.
+ * @param onUndoDelete callback invoked when the user taps UNDO after a delete snackbar.
+ * @param onDismissTransactionSheet callback invoked when the transaction edit/add sheet is dismissed.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
@@ -80,11 +100,13 @@ fun DashboardScreen(
     monthlySpent: Double,
     todaySpent: Double,
     transactionsByDate: Map<String, List<Transaction>>,
+    editingTransaction: Transaction?,
     onLogout: () -> Unit,
-    onSaveTransaction: (String, Double, Long) -> Unit,
+    onSaveTransaction: (Transaction) -> Unit,
     onTransactionClick: (Transaction) -> Unit,
     onDeleteTransaction: (Transaction) -> Unit,
-    onUndoDelete: (Transaction) -> Unit
+    onUndoDelete: (Transaction) -> Unit,
+    onDismissTransactionSheet: () -> Unit
 ) {
     var showAddSheet by remember { mutableStateOf(false) }
 
@@ -204,14 +226,18 @@ fun DashboardScreen(
                     }
                 }
             }
-        }// end
+        }
 
-        if (showAddSheet) {
+        if (showAddSheet || editingTransaction != null) {
             AddTransactionSheet(
-                onDismiss = { showAddSheet = false },
-                onSave = { desc, amount, timestamp ->
-                    onSaveTransaction(desc, amount, timestamp) // Pass data up to Activity
-                    showAddSheet = false // Close the sheet
+                initialTransaction = editingTransaction,
+                onDismiss = {
+                    showAddSheet = false
+                    onDismissTransactionSheet()
+                },
+                onSave = { transaction ->
+                    showAddSheet = false
+                    onSaveTransaction(transaction)
                 }
             )
         }

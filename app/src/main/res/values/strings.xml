@@ -4,6 +4,12 @@
     <string name="bus_btn">Metrobús</string>
     <string name="other_btn">Agregar otro gasto"</string>
     <string name="read_logs_btn">Leer logs</string>
+
+    <string name="common_accept">Aceptar</string>
+    <string name="common_cancel">Cancelar</string>
+    <string name="edit_tx_title">Editar transacción</string>
+    <string name="save_error">No se pudo guardar la transacción</string>
+
     <!-- Add -->
     <string name="add_tx_title">Agregar transacción</string>
     <string name="add_tx_description">Descripción</string>
