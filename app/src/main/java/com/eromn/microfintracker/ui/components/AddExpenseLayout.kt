@@ -47,11 +47,12 @@ import androidx.compose.ui.unit.dp
 import com.eromn.microfintracker.R
 import com.eromn.microfintracker.data.Category
 import com.eromn.microfintracker.data.Transaction
+import com.eromn.microfintracker.ui.extensions.iconRes
 import com.eromn.microfintracker.utils.DateUtils
 import java.util.Calendar
 
 /**
- * Preview for [AddTransactionForm].
+ * Preview for [AddTransactionForm] with default date/time values.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview(showBackground = true)
@@ -84,11 +85,19 @@ fun AddTransactionPreview(){
 }// end AddTransactionPreview
 
 /**
- * Modal bottom sheet that wraps [AddTransactionForm] and provides date/time picker dialogs.
+ * Modal bottom sheet that hosts the add/edit transaction form and date/time pickers.
  *
- * @param initialTransaction optional transaction to edit; when null a new transaction will be created.
- * @param onDismiss callback invoked when the sheet is dismissed.
- * @param onSave callback invoked with the transaction to be saved (new or updated).
+ * @param initialTransaction Optional transaction to edit; null for a new transaction.
+ * @param selectedCategory The currently selected category.
+ * @param isCategoryPickerVisible Whether the category picker dialog is shown.
+ * @param categorySearchQuery The current search query for the category picker.
+ * @param filteredCategories The list of categories filtered by the search query.
+ * @param onCategoryFieldClicked Callback invoked when the category field is clicked.
+ * @param onCategorySearchQueryChanged Callback invoked when the category search query changes.
+ * @param onCategorySelected Callback invoked when a category is selected.
+ * @param onDismissCategoryPicker Callback invoked to dismiss the category picker.
+ * @param onDismiss Callback invoked to dismiss the bottom sheet.
+ * @param onSave Callback invoked with the transaction to save.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -196,13 +205,15 @@ fun AddTransactionSheet(
 /**
  * Composable form for adding or editing a transaction.
  *
- * @param datePickerState state of the date picker used to select the transaction date.
- * @param timePickerState state of the time picker used to select the transaction time.
- * @param launchDatePicker callback that opens the date picker dialog.
- * @param launchTimePicker callback that opens the time picker dialog.
- * @param initialTransaction optional transaction being edited; when null a new transaction is entered.
- * @param onDismiss callback invoked when the user cancels the form.
- * @param onSave callback invoked with the constructed transaction when the user confirms.
+ * @param datePickerState State of the date picker.
+ * @param timePickerState State of the time picker.
+ * @param launchDatePicker Callback to open the date picker dialog.
+ * @param launchTimePicker Callback to open the time picker dialog.
+ * @param initialTransaction Optional transaction being edited; null for a new transaction.
+ * @param selectedCategory The currently selected category.
+ * @param onCategoryFieldClicked Callback invoked when the category field is clicked.
+ * @param onDismiss Callback invoked to dismiss the form.
+ * @param onSave Callback invoked with the constructed transaction.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -312,7 +323,7 @@ fun AddTransactionForm(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Category field
+        // Category field with Leading Icon ---
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -325,6 +336,13 @@ fun AddTransactionForm(
                 modifier = Modifier.fillMaxWidth(),
                 readOnly = true,
                 enabled = false,
+                leadingIcon = {
+                    Icon(
+                        painter = painterResource(id = selectedCategory.iconRes),
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary // Keep it vibrant
+                    )
+                },
                 trailingIcon = {
                     Icon(
                         painter = painterResource(R.drawable.ic_arrow_drop_down_24),
@@ -335,6 +353,7 @@ fun AddTransactionForm(
                     disabledTextColor = MaterialTheme.colorScheme.onSurface,
                     disabledBorderColor = MaterialTheme.colorScheme.outline,
                     disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    disabledLeadingIconColor = MaterialTheme.colorScheme.primary,
                     disabledTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             )
