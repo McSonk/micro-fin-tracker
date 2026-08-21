@@ -8,6 +8,7 @@ import com.eromn.microfintracker.data.Transaction
 import com.eromn.microfintracker.data.TransactionRepository
 import com.eromn.microfintracker.domain.repository.CategoryRepository
 import com.eromn.microfintracker.utils.DateUtils
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -191,6 +192,10 @@ class HistoryViewModel(
             _editingTransaction.value = null
             _saveFailed.value = false
         } catch (e: Exception) {
+            if(e is CancellationException){
+                // If the user switched screen on purpose
+                throw e
+            }
             _saveFailed.value = true
         }
     }
