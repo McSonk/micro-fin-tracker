@@ -31,5 +31,6 @@ val Category.iconRes: Int
         Category.PANTRY -> R.drawable.ic_shopping_bag_24
         Category.DONATIONS -> R.drawable.ic_mood_heart_24
         Category.CONVENIENCE -> R.drawable.ic_local_convenience_store_24
+        Category.OTHERS -> R.drawable.ic_alt_route_24
         else -> R.drawable.ic_question_mark_24
     }
