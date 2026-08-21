@@ -345,7 +345,7 @@ fun AddTransactionForm(
                     enabled = false, // Prevents keyboard focus
                     leadingIcon = {
                         Icon(
-                            painter = painterResource(id = android.R.drawable.ic_menu_my_calendar),
+                            painter = painterResource(id = R.drawable.ic_calendar_today_24),
                             contentDescription = null
                         )
                     },
@@ -373,7 +373,7 @@ fun AddTransactionForm(
                     enabled = false,
                     leadingIcon = {
                         Icon(
-                            painter = painterResource(id = android.R.drawable.ic_dialog_map),
+                            painter = painterResource(id = R.drawable.ic_clock_farsight_analog_24),
                             contentDescription = "Un reloj",
                         )
                     },
