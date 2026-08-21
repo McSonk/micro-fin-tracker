@@ -10,6 +10,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -39,6 +42,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.tooling.preview.Preview
 import com.eromn.microfintracker.ui.theme.FinTrackTheme
 import java.util.Calendar
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.unit.dp
+import com.eromn.microfintracker.data.Category
+import com.eromn.microfintracker.ui.extensions.iconRes
 
 @Preview(showBackground = true, backgroundColor = 0xFFF5F5F5)
 @Composable
@@ -61,10 +69,13 @@ fun PreviewItem(){
 }
 
 @Composable
-private fun TransactionItem(
+fun TransactionItem(
     transaction: Transaction,
     onClick: () -> Unit
 ) {
+    // Safely resolve the category. If null, your enum's fromId() defaults to OTHERS.
+    val category = Category.fromId(transaction.categoryId)
+
     Card(
         onClick = onClick,
         shape = RoundedCornerShape(16.dp),
@@ -72,8 +83,7 @@ private fun TransactionItem(
             containerColor = MaterialTheme.colorScheme.surfaceVariant
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        modifier = Modifier
-            .fillMaxWidth()
+        modifier = Modifier.fillMaxWidth()
     ) {
         Row(
             modifier = Modifier
@@ -82,6 +92,24 @@ private fun TransactionItem(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // Category Icon Container
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primaryContainer),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    painter = painterResource(id = category.iconRes), // Clean mapping!
+                    contentDescription = category.displayName,
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.width(12.dp))
+
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = transaction.description,
@@ -89,13 +117,14 @@ private fun TransactionItem(
                     fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.onSurface
                 )
-                Spacer(modifier = Modifier.height(4.dp))
+
                 Text(
-                    text = DateUtils.formatTime(transaction.timestamp),
+                    text = "${category.displayName} • ${DateUtils.formatTime(transaction.timestamp)}",
                     fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
+
             Text(
                 text = "$${String.format("%.0f", transaction.amount)}",
                 fontSize = 16.sp,
