@@ -110,8 +110,8 @@ fun TransactionItem(
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    painter = painterResource(id = category.iconRes), // Clean mapping!
-                    contentDescription = category.displayName,
+                    painter = painterResource(id = category.iconRes),
+                    contentDescription = null,
                     tint = MaterialTheme.colorScheme.onPrimaryContainer,
                     modifier = Modifier.size(24.dp)
                 )
