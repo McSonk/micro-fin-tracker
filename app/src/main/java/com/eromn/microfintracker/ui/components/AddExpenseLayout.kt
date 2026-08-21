@@ -11,9 +11,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DatePickerState
@@ -234,6 +236,12 @@ fun AddTransactionForm(
                     amount = 10.0.toString()
                 }
             }) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_bike_lane_24),
+                    contentDescription = null,
+                    modifier = Modifier.size(ButtonDefaults.IconSize)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
                 Text("YouBike")
             }
 
@@ -246,6 +254,12 @@ fun AddTransactionForm(
                     amount = 20.0.toString()
                 }
             }) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_train_24),
+                    contentDescription = null,
+                    modifier = Modifier.size(ButtonDefaults.IconSize)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
                 Text("MRT")
             }
             Spacer(modifier = Modifier.width(6.dp))
