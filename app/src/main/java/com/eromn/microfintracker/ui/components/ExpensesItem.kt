@@ -84,14 +84,15 @@ fun TransactionItem(
 ) {
     // Safely resolve the category. If null, your enum's fromId() defaults to OTHERS.
     val category = Category.fromId(transaction.categoryId)
+    val isRead = transaction.isRead
 
     Card(
         onClick = onClick,
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
+            containerColor = if (isRead) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.primaryContainer
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = if (isRead) 2.dp else 4.dp),
         modifier = Modifier.fillMaxWidth()
     ) {
         Row(
