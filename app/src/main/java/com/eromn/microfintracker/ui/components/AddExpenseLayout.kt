@@ -313,7 +313,7 @@ fun AddTransactionForm(
                 enabled = false,
                 trailingIcon = {
                     Icon(
-                        painter = painterResource(android.R.drawable.arrow_down_float),
+                        painter = painterResource(R.drawable.ic_arrow_drop_down_24),
                         contentDescription = null
                     )
                 },
