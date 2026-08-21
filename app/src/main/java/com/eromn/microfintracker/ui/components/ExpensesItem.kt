@@ -36,6 +36,29 @@ import com.eromn.microfintracker.R
 import com.eromn.microfintracker.data.Transaction
 import com.eromn.microfintracker.utils.DateUtils
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.tooling.preview.Preview
+import com.eromn.microfintracker.ui.theme.FinTrackTheme
+import java.util.Calendar
+
+@Preview(showBackground = true, backgroundColor = 0xFFF5F5F5)
+@Composable
+fun PreviewItem(){
+    val currentTime = Calendar.getInstance()
+    val tx = Transaction(
+        1,
+        "Bike rental",
+        500.0,
+        currentTime.timeInMillis,
+        categoryId = 1)
+
+
+    FinTrackTheme{
+        TransactionItem(
+            tx,
+            {}
+        )
+    }
+}
 
 @Composable
 private fun TransactionItem(
