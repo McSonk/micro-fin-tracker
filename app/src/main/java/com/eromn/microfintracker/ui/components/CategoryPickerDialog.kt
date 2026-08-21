@@ -38,6 +38,9 @@ import com.eromn.microfintracker.data.Category
 import com.eromn.microfintracker.ui.extensions.iconRes
 import com.eromn.microfintracker.ui.theme.FinTrackTheme
 
+/**
+ * Preview for [CategoryPickerDialog] with a sample list of categories.
+ */
 @Preview(showBackground = true, widthDp = 360, heightDp = 600)
 @Composable
 fun CategoryPickerDialogPreview() {
@@ -59,6 +62,9 @@ fun CategoryPickerDialogPreview() {
     }
 }
 
+/**
+ * Preview for [CategoryPickerDialog] when the search yields no results.
+ */
 @Preview(showBackground = true, widthDp = 360, heightDp = 600)
 @Composable
 fun CategoryPickerDialogEmptySearchPreview() {
@@ -74,6 +80,16 @@ fun CategoryPickerDialogEmptySearchPreview() {
     }
 }
 
+/**
+ * Dialog that allows the user to pick a category from a list.
+ *
+ * @param categories The list of categories to display.
+ * @param selectedCategoryId The server ID of the currently selected category.
+ * @param searchQuery The current search query text.
+ * @param onSearchQueryChange Callback invoked when the search query changes.
+ * @param onCategorySelected Callback invoked when a category is selected.
+ * @param onDismiss Callback invoked when the dialog is dismissed.
+ */
 @Composable
 fun CategoryPickerDialog(
     categories: List<Category>,

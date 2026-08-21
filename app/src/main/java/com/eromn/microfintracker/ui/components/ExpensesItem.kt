@@ -48,6 +48,9 @@ import androidx.compose.ui.unit.dp
 import com.eromn.microfintracker.data.Category
 import com.eromn.microfintracker.ui.extensions.iconRes
 
+/**
+ * Preview for [TransactionItem] with a sample transaction.
+ */
 @Preview(showBackground = true, backgroundColor = 0xFFF5F5F5)
 @Composable
 fun PreviewItem(){
@@ -68,6 +71,12 @@ fun PreviewItem(){
     }
 }
 
+/**
+ * Displays a single transaction in a card.
+ *
+ * @param transaction The transaction to display.
+ * @param onClick Callback invoked when the card is clicked.
+ */
 @Composable
 fun TransactionItem(
     transaction: Transaction,
@@ -135,6 +144,13 @@ fun TransactionItem(
     }
 }
 
+/**
+ * Displays a transaction item with swipe-to-delete functionality.
+ *
+ * @param transaction The transaction to display.
+ * @param onClick Callback invoked when the item is clicked.
+ * @param onDeleteRequested Callback invoked when the user swipes to delete.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SwipeableTransactionItem(

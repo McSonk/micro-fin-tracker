@@ -5,8 +5,7 @@ import com.eromn.microfintracker.R
 import com.eromn.microfintracker.data.Category
 
 /**
- * Maps a business logic Category to a UI-specific drawable resource.
- * This keeps the Android framework dependency (R.drawable) out of the data layer.
+ * Maps a [Category] to its corresponding drawable resource ID.
  */
 @get:DrawableRes
 val Category.iconRes: Int
