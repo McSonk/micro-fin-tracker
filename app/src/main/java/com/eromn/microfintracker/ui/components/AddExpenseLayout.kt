@@ -47,6 +47,9 @@ import com.eromn.microfintracker.data.Transaction
 import com.eromn.microfintracker.utils.DateUtils
 import java.util.Calendar
 
+/**
+ * Preview for [AddTransactionForm].
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview(showBackground = true)
 @Composable
@@ -75,6 +78,13 @@ fun AddTransactionPreview(){
     )
 }// end AddTransactionPreview
 
+/**
+ * Modal bottom sheet that wraps [AddTransactionForm] and provides date/time picker dialogs.
+ *
+ * @param initialTransaction optional transaction to edit; when null a new transaction will be created.
+ * @param onDismiss callback invoked when the sheet is dismissed.
+ * @param onSave callback invoked with the transaction to be saved (new or updated).
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddTransactionSheet(
@@ -157,7 +167,17 @@ fun AddTransactionSheet(
     } // end ModalBottomSheet
 }// end AddTransactionSheet
 
-// Externalise component so we can preview it
+/**
+ * Composable form for adding or editing a transaction.
+ *
+ * @param datePickerState state of the date picker used to select the transaction date.
+ * @param timePickerState state of the time picker used to select the transaction time.
+ * @param launchDatePicker callback that opens the date picker dialog.
+ * @param launchTimePicker callback that opens the time picker dialog.
+ * @param initialTransaction optional transaction being edited; when null a new transaction is entered.
+ * @param onDismiss callback invoked when the user cancels the form.
+ * @param onSave callback invoked with the constructed transaction when the user confirms.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddTransactionForm(
