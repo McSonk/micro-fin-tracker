@@ -53,8 +53,21 @@ import androidx.compose.foundation.layout.navigationBars
 @Composable
 fun DashboardPreview() {
     val mockTransactions = listOf(
-        Transaction(1, "Bike rental", 500.0, 1722585120000, categoryId = 1),
-        Transaction(2, "test", 450.0, 1722498960000, categoryId = 2),
+        Transaction(
+            1,
+            "Bike rental",
+            500.0,
+            1722585120000,
+            categoryId = 1,
+            isRead = false),
+        Transaction(
+            2,
+            "test",
+            450.0,
+            1722498960000,
+            categoryId = 2,
+            isRead = true
+        ),
         Transaction(3, "test", 450.0, 1721044560000, categoryId = 3)
     )
 
