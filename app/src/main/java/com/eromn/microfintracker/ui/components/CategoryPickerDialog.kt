@@ -24,7 +24,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -32,9 +31,48 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.window.DialogProperties
 import com.eromn.microfintracker.R
 import com.eromn.microfintracker.data.Category
+import com.eromn.microfintracker.ui.extensions.iconRes
+import com.eromn.microfintracker.ui.theme.FinTrackTheme
+
+@Preview(showBackground = true, widthDp = 360, heightDp = 600)
+@Composable
+fun CategoryPickerDialogPreview() {
+    FinTrackTheme {
+        CategoryPickerDialog(
+            categories = listOf(
+                Category.TRANSPORT,
+                Category.FOOD,
+                Category.ENTERTAINMENT,
+                Category.HEALTH,
+                Category.OTHERS
+            ),
+            selectedCategoryId = Category.FOOD.serverId, // Simulates "Food" being selected
+            searchQuery = "",
+            onSearchQueryChange = {},
+            onCategorySelected = {},
+            onDismiss = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, widthDp = 360, heightDp = 600)
+@Composable
+fun CategoryPickerDialogEmptySearchPreview() {
+    FinTrackTheme {
+        CategoryPickerDialog(
+            categories = emptyList(), // Simulates no search results
+            selectedCategoryId = Category.OTHERS.serverId,
+            searchQuery = "xyz", // Simulates an active search query
+            onSearchQueryChange = {},
+            onCategorySelected = {},
+            onDismiss = {}
+        )
+    }
+}
 
 @Composable
 fun CategoryPickerDialog(
