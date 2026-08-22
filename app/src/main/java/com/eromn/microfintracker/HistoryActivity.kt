@@ -12,7 +12,7 @@ import androidx.compose.runtime.getValue
 import com.eromn.microfintracker.data.AppDatabase
 import com.eromn.microfintracker.data.TransactionRepository
 import com.eromn.microfintracker.data.repository.CategoryRepositoryImpl
-import com.eromn.microfintracker.ui.components.DashboardScreen
+import com.eromn.microfintracker.ui.screens.DashboardScreen
 import com.eromn.microfintracker.viewmodel.HistoryViewModel
 import com.eromn.microfintracker.viewmodel.HistoryViewModelFactory
 

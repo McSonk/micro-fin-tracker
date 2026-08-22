@@ -1,4 +1,4 @@
-package com.eromn.microfintracker.ui.components
+package com.eromn.microfintracker.ui.screens
 
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -46,6 +46,9 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.view.WindowCompat
 import androidx.compose.foundation.layout.navigationBars
+import com.eromn.microfintracker.ui.components.AddTransactionSheet
+import com.eromn.microfintracker.ui.components.SwipeableTransactionItem
+import com.eromn.microfintracker.ui.components.UpperHeader
 
 /**
  * Preview of [DashboardScreen] with sample data.
@@ -241,9 +244,12 @@ fun DashboardScreen(
                                 onDeleteRequested = { tx ->
                                     onDeleteTransaction(tx)
 
-                                    coroutineScope.launch{
+                                    coroutineScope.launch {
                                         val result = snackbarHostState.showSnackbar(
-                                            message = context.getString(R.string.snackbar_deleted_format, tx.description),
+                                            message = context.getString(
+                                                R.string.snackbar_deleted_format,
+                                                tx.description
+                                            ),
                                             actionLabel = context.getString(R.string.snackbar_undo),
                                             duration = SnackbarDuration.Long
                                         )
