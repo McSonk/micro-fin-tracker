@@ -82,6 +82,8 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     // Optional - Integration with ViewModels
     implementation(libs.androidx.lifecycle.viewmodel.compose)
+    // Lifecycle-aware flow collection
+    implementation(libs.androidx.lifecycle.runtime.compose)
     // Optional - Integration with LiveData
     implementation(libs.androidx.runtime.livedata)
     // Optional - Integration with RxJava
