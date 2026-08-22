@@ -11,9 +11,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DatePickerState
@@ -48,6 +50,9 @@ import com.eromn.microfintracker.data.Transaction
 import com.eromn.microfintracker.ui.extensions.iconRes
 import com.eromn.microfintracker.utils.DateUtils
 import java.util.Calendar
+
+private const val YOUBIKE_QUICK_LABEL = "YouBike"
+private const val MRT_QUICK_LABEL = "MRT"
 
 /**
  * Preview for [AddTransactionForm] with default date/time values.
@@ -175,7 +180,7 @@ fun AddTransactionSheet(
         }// end date modal
         if (showTimePicker) { // time modal
             TimePickerDialog(
-                title = { Text("Selecciona la hora") },
+                title = { Text(stringResource(R.string.add_tx_select_time)) },
                 onDismissRequest = { showTimePicker = false  },
                 confirmButton = {
                     Button(onClick = { showTimePicker = false }) {
@@ -226,16 +231,15 @@ fun AddTransactionForm(
     onDismiss: () -> Unit,
     onSave: (Transaction) -> Unit,
 ) {
-    var YOUBIKE_TXT = "YouBike"
-    var MRT_TXT = "MRT"
-
     var description by remember(initialTransaction?.id) {
         mutableStateOf(initialTransaction?.description.orEmpty())
     }
     var amount by remember(initialTransaction?.id) {
         mutableStateOf(initialTransaction?.amount?.toString().orEmpty())
     }
-    val selectedDateText = DateUtils.formatDateUTC(datePickerState.selectedDateMillis!!)
+    val selectedDateText = datePickerState.selectedDateMillis
+        ?.let { DateUtils.formatDateUTC(it) }
+        .orEmpty()
     val selectedTimeText = DateUtils.formatTime(timePickerState.hour, timePickerState.minute)
 
     Column(
@@ -262,28 +266,40 @@ fun AddTransactionForm(
         ){
             Spacer(modifier = Modifier.width(6.dp))
             Button(onClick = {
-                if (description == YOUBIKE_TXT){
+                if (description == YOUBIKE_QUICK_LABEL){
                     val originalAmount = amount.toDoubleOrNull() ?: 0.0
                     amount = (originalAmount + 10.0).toString()
                 }
                 else {
-                    description = YOUBIKE_TXT
+                    description = YOUBIKE_QUICK_LABEL
                     amount = 10.0.toString()
                 }
             }) {
-                Text("YouBike")
+                Icon(
+                    painter = painterResource(R.drawable.ic_bike_lane_24),
+                    contentDescription = null,
+                    modifier = Modifier.size(ButtonDefaults.IconSize)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(stringResource(R.string.quick_btn_youbike))
             }
 
             Button(onClick = {
-                if (description == MRT_TXT) {
+                if (description == MRT_QUICK_LABEL) {
                     val originalAmount = amount.toDoubleOrNull() ?: 0.0
                     amount = (originalAmount + 5.0).toString()
                 } else {
-                    description = MRT_TXT
+                    description = MRT_QUICK_LABEL
                     amount = 20.0.toString()
                 }
             }) {
-                Text("MRT")
+                Icon(
+                    painter = painterResource(R.drawable.ic_train_24),
+                    contentDescription = null,
+                    modifier = Modifier.size(ButtonDefaults.IconSize)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(stringResource(R.string.quick_btn_mrt))
             }
             Spacer(modifier = Modifier.width(6.dp))
         }
@@ -358,7 +374,7 @@ fun AddTransactionForm(
                 OutlinedTextField(
                     value = selectedDateText,
                     onValueChange = {},
-                    label = { Text("Fecha") },
+                    label = { Text(stringResource(R.string.add_tx_date)) },
                     modifier = Modifier.fillMaxWidth(),
                     readOnly = true,
                     enabled = false, // Prevents keyboard focus
@@ -386,14 +402,14 @@ fun AddTransactionForm(
                 OutlinedTextField(
                     value = selectedTimeText,
                     onValueChange = {},
-                    label = { Text("Hora") },
+                    label = { Text(stringResource(R.string.add_tx_time)) },
                     modifier = Modifier.fillMaxWidth(),
                     readOnly = true,
                     enabled = false,
                     leadingIcon = {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_clock_farsight_analog_24),
-                            contentDescription = "Un reloj",
+                            contentDescription = stringResource(R.string.add_tx_select_time),
                         )
                     },
                     colors = OutlinedTextFieldDefaults.colors(

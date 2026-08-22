@@ -25,6 +25,7 @@ import com.eromn.microfintracker.data.Transaction
 import com.eromn.microfintracker.data.Category
 import com.eromn.microfintracker.ui.theme.FinTrackTheme
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.eromn.microfintracker.R
 import androidx.compose.material3.SnackbarDuration
@@ -42,6 +43,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.platform.LocalContext
 import androidx.core.view.WindowCompat
 import androidx.compose.foundation.layout.navigationBars
 
@@ -53,8 +55,21 @@ import androidx.compose.foundation.layout.navigationBars
 @Composable
 fun DashboardPreview() {
     val mockTransactions = listOf(
-        Transaction(1, "Bike rental", 500.0, 1722585120000, categoryId = 1),
-        Transaction(2, "test", 450.0, 1722498960000, categoryId = 2),
+        Transaction(
+            1,
+            "Bike rental",
+            500.0,
+            1722585120000,
+            categoryId = 1,
+            isRead = false),
+        Transaction(
+            2,
+            "test",
+            450.0,
+            1722498960000,
+            categoryId = 2,
+            isRead = true
+        ),
         Transaction(3, "test", 450.0, 1721044560000, categoryId = 3)
     )
 
@@ -144,6 +159,7 @@ fun DashboardScreen(
 
         val snackbarHostState = remember { SnackbarHostState() }
         val coroutineScope = rememberCoroutineScope()
+        val context = LocalContext.current
 
         Scaffold(
             containerColor = MaterialTheme.colorScheme.background,
@@ -160,7 +176,7 @@ fun DashboardScreen(
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.ic_add_24),
-                        contentDescription = "Add transaction",
+                        contentDescription = stringResource(R.string.add_tx_title),
                         modifier = Modifier.size(24.dp)
                     )
                 }
@@ -192,7 +208,7 @@ fun DashboardScreen(
                     // Transactions Section
                     item {
                         Text(
-                            text = "Transactions",
+                            text = stringResource(R.string.dashboard_transactions_title),
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Medium,
                             color = MaterialTheme.colorScheme.onBackground,
@@ -227,8 +243,8 @@ fun DashboardScreen(
 
                                     coroutineScope.launch{
                                         val result = snackbarHostState.showSnackbar(
-                                            message = "Deleted: ${tx.description}",
-                                            actionLabel = "UNDO",
+                                            message = context.getString(R.string.snackbar_deleted_format, tx.description),
+                                            actionLabel = context.getString(R.string.snackbar_undo),
                                             duration = SnackbarDuration.Long
                                         )
                                         if (result == SnackbarResult.ActionPerformed) {

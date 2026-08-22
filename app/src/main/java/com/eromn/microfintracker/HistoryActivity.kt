@@ -7,7 +7,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import com.eromn.microfintracker.data.AppDatabase
 import com.eromn.microfintracker.data.TransactionRepository
@@ -34,13 +34,13 @@ class HistoryActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            val transactions by historyViewModel.groupedTransactions.collectAsState(emptyMap())
-            val editingTransaction by historyViewModel.editingTransaction.collectAsState()
-            val saveFailed by historyViewModel.saveFailed.collectAsState()
-            val filteredCategories by historyViewModel.filteredCategoryOptions.collectAsState(emptyList())
-            val selectedCategory by historyViewModel.selectedCategory.collectAsState()
-            val isCategoryPickerVisible by historyViewModel.isCategoryPickerVisible.collectAsState()
-            val categorySearchQuery by historyViewModel.categorySearchQuery.collectAsState()
+            val transactions by historyViewModel.groupedTransactions.collectAsStateWithLifecycle(initialValue = emptyMap())
+            val editingTransaction by historyViewModel.editingTransaction.collectAsStateWithLifecycle()
+            val saveFailed by historyViewModel.saveFailed.collectAsStateWithLifecycle()
+            val filteredCategories by historyViewModel.filteredCategoryOptions.collectAsStateWithLifecycle()
+            val selectedCategory by historyViewModel.selectedCategory.collectAsStateWithLifecycle()
+            val isCategoryPickerVisible by historyViewModel.isCategoryPickerVisible.collectAsStateWithLifecycle()
+            val categorySearchQuery by historyViewModel.categorySearchQuery.collectAsStateWithLifecycle()
 
             LaunchedEffect(saveFailed) {
                 if (saveFailed) {

@@ -24,6 +24,10 @@ local.properties
 .idea/httpRequests/
 .idea/deploymentTargetSelector.xml
 
+# Agents
+.agents
+.aider*
+skills-lock.json
+
 # Personal
 pendientes.md
-.aider*
