@@ -25,6 +25,7 @@ import com.eromn.microfintracker.data.Transaction
 import com.eromn.microfintracker.data.Category
 import com.eromn.microfintracker.ui.theme.FinTrackTheme
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.eromn.microfintracker.R
 import androidx.compose.material3.SnackbarDuration
@@ -205,7 +206,7 @@ fun DashboardScreen(
                     // Transactions Section
                     item {
                         Text(
-                            text = "Transactions",
+                            text = stringResource(R.string.dashboard_transactions_title),
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Medium,
                             color = MaterialTheme.colorScheme.onBackground,

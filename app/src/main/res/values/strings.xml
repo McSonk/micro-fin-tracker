@@ -2,8 +2,15 @@
     <string name="app_name">MicroFinTracker</string>
     <string name="subway_btn">Metro</string>
     <string name="bus_btn">Metrobús</string>
-    <string name="other_btn">Agregar otro gasto"</string>
+    <string name="other_btn">Agregar otro gasto</string>
     <string name="read_logs_btn">Leer logs</string>
+
+    <!-- Header / Dashboard -->
+    <string name="header_welcome_back">Bienvenido de nuevo</string>
+    <string name="header_spent_this_month">Gastado este mes</string>
+    <string name="header_today_spent">$%1$s hoy</string>
+    <string name="logout_content_description">Cerrar sesión</string>
+    <string name="dashboard_transactions_title">Transacciones</string>
 
     <string name="common_accept">Aceptar</string>
     <string name="common_cancel">Cancelar</string>
