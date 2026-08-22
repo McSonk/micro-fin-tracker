@@ -14,12 +14,12 @@ This is a modern, offline-first expense tracker Android application with a Spani
 - **Local Database:** Room 2.7.2 (using KSP for annotation processing).
 
 ## 3. Build & Verify (Crucial for CLI Agents)
-- **Execution:** Use `sh gradlew` (the `gradlew` script is not executable on this machine).
-- **JDK Warning:** CLI Gradle fails with the system's default Java 25. You must use JDK 17–21 via `JAVA_HOME` (e.g., `jdk21-openjdk`). IDE builds work because Android Studio bundles its own runtime.
+- **Execution:** Run `./gradlew` directly.
+- **JDK Configuration:** The project is configured to use JDK 21 via `org.gradle.java.home` in `gradle.properties`. CLI builds will work out-of-the-box without needing to set `JAVA_HOME` manually.
 - **Commands:** 
-  - `sh gradlew :app:assembleDebug` (Debug builds install with applicationId suffix `.debug`)
-  - `sh gradlew :app:testDebugUnitTest` (Note: Tests are currently template placeholders; compilation is the real gate).
-- **Config:** `gradle.properties` enables configuration cache, parallel builds, and a 4 GB daemon heap.
+  - `./gradlew :app:assembleDebug` (Debug builds install with applicationId suffix `.debug`)
+  - `./gradlew :app:testDebugUnitTest` (Note: Tests are currently template placeholders; compilation is the real gate).
+- **Config:** `gradle.properties` enables configuration cache, parallel builds, a 4 GB daemon heap, and pins the Gradle JDK to 21.
 
 ## 4. Architecture & Folder Structure
 When adding **new** features or files, strictly follow this directory structure. 
