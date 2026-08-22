@@ -51,6 +51,9 @@ import com.eromn.microfintracker.ui.extensions.iconRes
 import com.eromn.microfintracker.utils.DateUtils
 import java.util.Calendar
 
+private const val YOUBIKE_QUICK_LABEL = "YouBike"
+private const val MRT_QUICK_LABEL = "MRT"
+
 /**
  * Preview for [AddTransactionForm] with default date/time values.
  */
@@ -228,9 +231,6 @@ fun AddTransactionForm(
     onDismiss: () -> Unit,
     onSave: (Transaction) -> Unit,
 ) {
-    var YOUBIKE_TXT = "YouBike"
-    var MRT_TXT = "MRT"
-
     var description by remember(initialTransaction?.id) {
         mutableStateOf(initialTransaction?.description.orEmpty())
     }
@@ -266,12 +266,12 @@ fun AddTransactionForm(
         ){
             Spacer(modifier = Modifier.width(6.dp))
             Button(onClick = {
-                if (description == YOUBIKE_TXT){
+                if (description == YOUBIKE_QUICK_LABEL){
                     val originalAmount = amount.toDoubleOrNull() ?: 0.0
                     amount = (originalAmount + 10.0).toString()
                 }
                 else {
-                    description = YOUBIKE_TXT
+                    description = YOUBIKE_QUICK_LABEL
                     amount = 10.0.toString()
                 }
             }) {
@@ -285,11 +285,11 @@ fun AddTransactionForm(
             }
 
             Button(onClick = {
-                if (description == MRT_TXT) {
+                if (description == MRT_QUICK_LABEL) {
                     val originalAmount = amount.toDoubleOrNull() ?: 0.0
                     amount = (originalAmount + 5.0).toString()
                 } else {
-                    description = MRT_TXT
+                    description = MRT_QUICK_LABEL
                     amount = 20.0.toString()
                 }
             }) {
@@ -409,7 +409,7 @@ fun AddTransactionForm(
                     leadingIcon = {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_clock_farsight_analog_24),
-                            contentDescription = "Un reloj",
+                            contentDescription = stringResource(R.string.add_tx_select_time),
                         )
                     },
                     colors = OutlinedTextFieldDefaults.colors(
