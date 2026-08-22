@@ -23,6 +23,11 @@
     <string name="add_tx_amount">Monto</string>
     <string name="add_tx_btn_add">Agregar</string>
     <string name="add_tx_btn_cancel">Cancelar</string>
+    <string name="add_tx_date">Fecha</string>
+    <string name="add_tx_time">Hora</string>
+    <string name="add_tx_select_time">Selecciona la hora</string>
+    <string name="quick_btn_youbike">YouBike</string>
+    <string name="quick_btn_mrt">MRT</string>
 
     <!-- Category picker -->
     <string name="add_tx_category">Categoría</string>
@@ -30,4 +35,9 @@
     <string name="category_search_hint">Buscar categoría…</string>
     <string name="category_empty">No hay categorías disponibles</string>
     <string name="category_selected_content_description">Categoría seleccionada</string>
+
+    <!-- Actions / snackbar -->
+    <string name="delete_content_description">Eliminar</string>
+    <string name="snackbar_deleted_format">Eliminado: %1$s</string>
+    <string name="snackbar_undo">Deshacer</string>
 </resources>

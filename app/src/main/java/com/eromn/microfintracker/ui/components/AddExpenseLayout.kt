@@ -177,7 +177,7 @@ fun AddTransactionSheet(
         }// end date modal
         if (showTimePicker) { // time modal
             TimePickerDialog(
-                title = { Text("Selecciona la hora") },
+                title = { Text(stringResource(R.string.add_tx_select_time)) },
                 onDismissRequest = { showTimePicker = false  },
                 confirmButton = {
                     Button(onClick = { showTimePicker = false }) {
@@ -279,7 +279,7 @@ fun AddTransactionForm(
                     modifier = Modifier.size(ButtonDefaults.IconSize)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("YouBike")
+                Text(stringResource(R.string.quick_btn_youbike))
             }
 
             Button(onClick = {
@@ -297,7 +297,7 @@ fun AddTransactionForm(
                     modifier = Modifier.size(ButtonDefaults.IconSize)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("MRT")
+                Text(stringResource(R.string.quick_btn_mrt))
             }
             Spacer(modifier = Modifier.width(6.dp))
         }
@@ -372,7 +372,7 @@ fun AddTransactionForm(
                 OutlinedTextField(
                     value = selectedDateText,
                     onValueChange = {},
-                    label = { Text("Fecha") },
+                    label = { Text(stringResource(R.string.add_tx_date)) },
                     modifier = Modifier.fillMaxWidth(),
                     readOnly = true,
                     enabled = false, // Prevents keyboard focus
@@ -400,7 +400,7 @@ fun AddTransactionForm(
                 OutlinedTextField(
                     value = selectedTimeText,
                     onValueChange = {},
-                    label = { Text("Hora") },
+                    label = { Text(stringResource(R.string.add_tx_time)) },
                     modifier = Modifier.fillMaxWidth(),
                     readOnly = true,
                     enabled = false,

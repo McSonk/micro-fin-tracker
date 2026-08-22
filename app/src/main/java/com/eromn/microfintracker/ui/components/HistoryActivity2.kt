@@ -43,6 +43,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.platform.LocalContext
 import androidx.core.view.WindowCompat
 import androidx.compose.foundation.layout.navigationBars
 
@@ -158,6 +159,7 @@ fun DashboardScreen(
 
         val snackbarHostState = remember { SnackbarHostState() }
         val coroutineScope = rememberCoroutineScope()
+        val context = LocalContext.current
 
         Scaffold(
             containerColor = MaterialTheme.colorScheme.background,
@@ -174,7 +176,7 @@ fun DashboardScreen(
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.ic_add_24),
-                        contentDescription = "Add transaction",
+                        contentDescription = stringResource(R.string.add_tx_title),
                         modifier = Modifier.size(24.dp)
                     )
                 }
@@ -241,8 +243,8 @@ fun DashboardScreen(
 
                                     coroutineScope.launch{
                                         val result = snackbarHostState.showSnackbar(
-                                            message = "Deleted: ${tx.description}",
-                                            actionLabel = "UNDO",
+                                            message = context.getString(R.string.snackbar_deleted_format, tx.description),
+                                            actionLabel = context.getString(R.string.snackbar_undo),
                                             duration = SnackbarDuration.Long
                                         )
                                         if (result == SnackbarResult.ActionPerformed) {
