@@ -38,6 +38,8 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            // Only for local testing. Not suitable for Play Store release.
+            // signingConfig = signingConfigs.getByName("debug")
         }
     }
     compileOptions {
