@@ -81,29 +81,31 @@ fun DashboardPreview() {
         "YESTERDAY" to listOf(mockTransactions[1]),
         "WEDNESDAY, JUL 15" to listOf(mockTransactions[2])
     )
-
-    DashboardScreen(
-        username = "test",
-        monthlySpent = 950.0,
-        todaySpent = 500.0,
-        transactionsByDate = groupedTransactions,
-        editingTransaction = null,
-        onLogout = { },
-        onSaveTransaction = { _ -> },
-        onTransactionClick = { },
-        onDeleteTransaction = { },
-        onUndoDelete = { },
-        onDismissTransactionSheet = { },
-        selectedCategory = Category.OTHERS,
-        isCategoryPickerVisible = false,
-        categorySearchQuery = "",
-        filteredCategories = emptyList(),
-        onAddTransactionRequested = { },
-        onCategoryFieldClicked = { },
-        onCategorySearchQueryChanged = { },
-        onCategorySelected = { },
-        onDismissCategoryPicker = { }
-    )
+    
+    FinTrackTheme {
+        DashboardScreen(
+            username = "test",
+            monthlySpent = 950.0,
+            todaySpent = 500.0,
+            transactionsByDate = groupedTransactions,
+            editingTransaction = null,
+            onLogout = { },
+            onSaveTransaction = { _ -> },
+            onTransactionClick = { },
+            onDeleteTransaction = { },
+            onUndoDelete = { },
+            onDismissTransactionSheet = { },
+            selectedCategory = Category.OTHERS,
+            isCategoryPickerVisible = false,
+            categorySearchQuery = "",
+            filteredCategories = emptyList(),
+            onAddTransactionRequested = { },
+            onCategoryFieldClicked = { },
+            onCategorySearchQueryChanged = { },
+            onCategorySelected = { },
+            onDismissCategoryPicker = { }
+        )
+    }
 }
 
 /**
