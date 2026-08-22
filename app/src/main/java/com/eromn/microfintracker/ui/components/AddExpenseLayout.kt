@@ -237,7 +237,9 @@ fun AddTransactionForm(
     var amount by remember(initialTransaction?.id) {
         mutableStateOf(initialTransaction?.amount?.toString().orEmpty())
     }
-    val selectedDateText = DateUtils.formatDateUTC(datePickerState.selectedDateMillis!!)
+    val selectedDateText = datePickerState.selectedDateMillis
+        ?.let { DateUtils.formatDateUTC(it) }
+        .orEmpty()
     val selectedTimeText = DateUtils.formatTime(timePickerState.hour, timePickerState.minute)
 
     Column(
