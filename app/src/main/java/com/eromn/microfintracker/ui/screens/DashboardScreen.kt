@@ -233,16 +233,9 @@ fun DashboardScreen(
                             message = context.getString(R.string.snackbar_no_read_transactions),
                             duration = SnackbarDuration.Short
                         )
-                    is DeleteReadResult.Deleted -> {
+                    is DeleteReadResult.Deleted ->
+                        // Success is communicated with the animated checkmark overlay alone.
                         showDeleteSuccess = true
-                        snackbarHostState.showSnackbar(
-                            message = context.getString(
-                                R.string.snackbar_deleted_read_count_format,
-                                deleteReadResult.count
-                            ),
-                            duration = SnackbarDuration.Short
-                        )
-                    }
                     is DeleteReadResult.Failed ->
                         snackbarHostState.showSnackbar(
                             message = context.getString(R.string.snackbar_delete_read_error),
