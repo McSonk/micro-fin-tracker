@@ -32,6 +32,9 @@ fun PreviewHeaderLayout() {
     UpperHeader(
         "McSonk",
         {},
+        false,
+        {},
+        false,
         500.0,
         100.0
     )
@@ -40,7 +43,10 @@ fun PreviewHeaderLayout() {
 @Composable
 fun UpperHeader(
     username: String,
-    onLogout: () -> Unit,
+    onUploadToServer: () -> Unit,
+    isUploading: Boolean,
+    onDeleteReadRequested: () -> Unit,
+    isDeletingRead: Boolean,
     monthlySpent: Double,
     todaySpent: Double
 ) {
@@ -51,7 +57,7 @@ fun UpperHeader(
             .background(MaterialTheme.colorScheme.inverseSurface) // then paint over it
             .padding(bottom = 16.dp)
     ) {
-        HeaderSection(username, onLogout)
+        HeaderSection(username, onUploadToServer, isUploading, onDeleteReadRequested, isDeletingRead)
         Spacer(modifier = Modifier.height(24.dp))
         SpendingSummary(monthlySpent, todaySpent)
     }
@@ -60,7 +66,10 @@ fun UpperHeader(
 @Composable
 private fun HeaderSection(
     username: String,
-    onLogout: () -> Unit
+    onUploadToServer: () -> Unit,
+    isUploading: Boolean,
+    onDeleteReadRequested: () -> Unit,
+    isDeletingRead: Boolean
 ) {
     Column(
         modifier = Modifier
@@ -70,10 +79,9 @@ private fun HeaderSection(
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column {
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = stringResource(R.string.header_welcome_back),
                     fontSize = 14.sp,
@@ -88,10 +96,18 @@ private fun HeaderSection(
                 )
             }
 
-            IconButton(onClick = onLogout) {
+            IconButton(onClick = onUploadToServer, enabled = !isUploading && !isDeletingRead) {
                 Icon(
-                    painter = painterResource(R.drawable.ic_logout_24),
-                    contentDescription = stringResource(R.string.logout_content_description),
+                    painter = painterResource(R.drawable.ic_cloud_upload_24),
+                    contentDescription = stringResource(R.string.upload_content_description),
+                    tint = MaterialTheme.colorScheme.inverseOnSurface
+                )
+            }
+
+            IconButton(onClick = onDeleteReadRequested, enabled = !isUploading && !isDeletingRead) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_delete_forever_24),
+                    contentDescription = stringResource(R.string.delete_read_transactions_content_description),
                     tint = MaterialTheme.colorScheme.inverseOnSurface
                 )
             }
