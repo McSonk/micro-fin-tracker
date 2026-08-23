@@ -54,6 +54,7 @@
         <item quantity="other">Hubo %d transacciones con errores.</item>
     </plurals>
     <string name="snackbar_no_pending_transactions">No hay transacciones pendientes para subir.</string>
+    <string name="snackbar_upload_failed">No se pudieron subir las transacciones.</string>
     <string name="snackbar_no_read_transactions">No hay transacciones leídas para eliminar.</string>
     <string name="snackbar_delete_read_error">No se pudieron eliminar las transacciones.</string>
     <string name="uploading_content_description">Subiendo transacciones…</string>

@@ -213,6 +213,8 @@ fun DashboardScreen(
                 val message = when (uploadResult) {
                     is UploadResult.NoPendingTransactions ->
                         context.getString(R.string.snackbar_no_pending_transactions)
+                    is UploadResult.Failed ->
+                        context.getString(R.string.snackbar_upload_failed)
                     is UploadResult.Summary -> buildString {
                         append(
                             context.resources.getQuantityString(

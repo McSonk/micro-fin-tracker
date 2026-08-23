@@ -1,5 +1,6 @@
 package com.eromn.microfintracker.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -245,7 +246,8 @@ class HistoryViewModel(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                _uploadResult.value = UploadResult.Summary(0, 0)
+                Log.e(TAG, "uploadToServer failed", e)
+                _uploadResult.value = UploadResult.Failed
             } finally {
                 _isUploading.value = false
             }
@@ -309,6 +311,10 @@ class HistoryViewModel(
         _selectedCategoryId.value = category.serverId
         _isCategoryPickerVisible.value = false
         _categorySearchQuery.value = ""
+    }
+
+    private companion object {
+        const val TAG = "HistoryViewModel"
     }
 }
 

@@ -17,4 +17,9 @@ sealed interface UploadResult {
         val successCount: Int,
         val errorCount: Int
     ) : UploadResult
+
+    /**
+     * The upload attempt failed before any batch result could be produced.
+     */
+    data object Failed : UploadResult
 }
