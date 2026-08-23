@@ -148,5 +148,12 @@ class TransactionUploadRepositoryImplTest {
             _transactions.removeAll { it.id == id }
             _allFlow.value = _transactions.toList()
         }
+
+        override suspend fun deleteRead(): Int {
+            val removed = _transactions.filter { it.isRead }
+            _transactions.removeAll { it.isRead }
+            _allFlow.value = _transactions.toList()
+            return removed.size
+        }
     }
 }

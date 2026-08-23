@@ -48,4 +48,11 @@ interface TransactionDao {
      */
     @Query("DELETE FROM `transaction` WHERE id = :id")
     suspend fun deleteById(id: Int)
+
+    /**
+     * Deletes all transactions that have already been uploaded to the server.
+     * Returns the number of deleted rows.
+     */
+    @Query("DELETE FROM `transaction` WHERE is_read = 1")
+    suspend fun deleteRead(): Int
 }

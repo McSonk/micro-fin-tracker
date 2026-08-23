@@ -50,6 +50,8 @@ class HistoryActivity : AppCompatActivity() {
             val categorySearchQuery by historyViewModel.categorySearchQuery.collectAsStateWithLifecycle()
             val uploadResult by historyViewModel.uploadResult.collectAsStateWithLifecycle()
             val isUploading by historyViewModel.isUploading.collectAsStateWithLifecycle()
+            val deleteReadResult by historyViewModel.deleteReadResult.collectAsStateWithLifecycle()
+            val isDeletingRead by historyViewModel.isDeletingRead.collectAsStateWithLifecycle()
 
             LaunchedEffect(saveFailed) {
                 if (saveFailed) {
@@ -72,6 +74,10 @@ class HistoryActivity : AppCompatActivity() {
                 isUploading = isUploading,
                 uploadResult = uploadResult,
                 onUploadResultShown = { historyViewModel.clearUploadResult() },
+                onDeleteReadConfirmed = { historyViewModel.deleteReadTransactions() },
+                isDeletingRead = isDeletingRead,
+                deleteReadResult = deleteReadResult,
+                onDeleteReadResultShown = { historyViewModel.clearDeleteReadResult() },
                 onSaveTransaction = { transaction ->
                     historyViewModel.saveTransaction(transaction)
                 },

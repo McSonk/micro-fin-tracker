@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.eromn.microfintracker.data.Category
 import com.eromn.microfintracker.data.Transaction
 import com.eromn.microfintracker.data.TransactionRepository
+import com.eromn.microfintracker.domain.model.DeleteReadResult
 import com.eromn.microfintracker.domain.model.UploadResult
 import com.eromn.microfintracker.domain.repository.CategoryRepository
 import com.eromn.microfintracker.domain.repository.TransactionUploadRepository
@@ -74,6 +75,20 @@ class HistoryViewModel(
      * The outcome of the last upload attempt, if any.
      */
     val uploadResult: StateFlow<UploadResult?> = _uploadResult.asStateFlow()
+
+    private val _isDeletingRead = MutableStateFlow(false)
+
+    /**
+     * True while a delete of read transactions is in progress.
+     */
+    val isDeletingRead: StateFlow<Boolean> = _isDeletingRead.asStateFlow()
+
+    private val _deleteReadResult = MutableStateFlow<DeleteReadResult?>(null)
+
+    /**
+     * The outcome of the last delete-read-transactions attempt, if any.
+     */
+    val deleteReadResult: StateFlow<DeleteReadResult?> = _deleteReadResult.asStateFlow()
 
     // Category picker state
     private val _categoryOptions = MutableStateFlow<List<Category>>(emptyList())
@@ -222,7 +237,7 @@ class HistoryViewModel(
      * upload is already in progress and exposes the outcome via [uploadResult].
      */
     fun uploadToServer() {
-        if (_isUploading.value) return
+        if (_isUploading.value || _isDeletingRead.value) return
         _isUploading.value = true
         viewModelScope.launch(Dispatchers.IO) {
             try {
@@ -242,6 +257,37 @@ class HistoryViewModel(
      */
     fun clearUploadResult() {
         _uploadResult.value = null
+    }
+
+    /**
+     * Deletes all transactions that have already been uploaded to the server.
+     * Ignores the request while a deletion or an upload is already in progress and
+     * exposes the outcome via [deleteReadResult].
+     */
+    fun deleteReadTransactions() {
+        if (_isDeletingRead.value || _isUploading.value) return
+        _isDeletingRead.value = true
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val count = repository.deleteRead()
+                _deleteReadResult.value =
+                    if (count == 0) DeleteReadResult.NoReadTransactions
+                    else DeleteReadResult.Deleted(count)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                _deleteReadResult.value = DeleteReadResult.Failed
+            } finally {
+                _isDeletingRead.value = false
+            }
+        }
+    }
+
+    /**
+     * Clears the delete-read-transactions result once the UI has shown its feedback.
+     */
+    fun clearDeleteReadResult() {
+        _deleteReadResult.value = null
     }
 
     // Category picker actions

@@ -33,6 +33,8 @@ fun PreviewHeaderLayout() {
         "McSonk",
         {},
         false,
+        {},
+        false,
         500.0,
         100.0
     )
@@ -43,6 +45,8 @@ fun UpperHeader(
     username: String,
     onUploadToServer: () -> Unit,
     isUploading: Boolean,
+    onDeleteReadRequested: () -> Unit,
+    isDeletingRead: Boolean,
     monthlySpent: Double,
     todaySpent: Double
 ) {
@@ -53,7 +57,7 @@ fun UpperHeader(
             .background(MaterialTheme.colorScheme.inverseSurface) // then paint over it
             .padding(bottom = 16.dp)
     ) {
-        HeaderSection(username, onUploadToServer, isUploading)
+        HeaderSection(username, onUploadToServer, isUploading, onDeleteReadRequested, isDeletingRead)
         Spacer(modifier = Modifier.height(24.dp))
         SpendingSummary(monthlySpent, todaySpent)
     }
@@ -63,7 +67,9 @@ fun UpperHeader(
 private fun HeaderSection(
     username: String,
     onUploadToServer: () -> Unit,
-    isUploading: Boolean
+    isUploading: Boolean,
+    onDeleteReadRequested: () -> Unit,
+    isDeletingRead: Boolean
 ) {
     Column(
         modifier = Modifier
@@ -90,7 +96,7 @@ private fun HeaderSection(
                 )
             }
 
-            IconButton(onClick = onUploadToServer, enabled = !isUploading) {
+            IconButton(onClick = onUploadToServer, enabled = !isUploading && !isDeletingRead) {
                 Icon(
                     painter = painterResource(R.drawable.ic_cloud_upload_24),
                     contentDescription = stringResource(R.string.upload_content_description),
@@ -98,7 +104,7 @@ private fun HeaderSection(
                 )
             }
 
-            IconButton(onClick = {}) {
+            IconButton(onClick = onDeleteReadRequested, enabled = !isUploading && !isDeletingRead) {
                 Icon(
                     painter = painterResource(R.drawable.ic_delete_forever_24),
                     contentDescription = stringResource(R.string.delete_read_transactions_content_description),

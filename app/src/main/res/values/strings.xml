@@ -12,6 +12,10 @@
     <string name="upload_content_description">Subir transacciones al servidor</string>
     <string name="delete_read_transactions_content_description">Eliminar transacciones leídas</string>
     <string name="dashboard_transactions_title">Transacciones</string>
+    <string name="delete_read_confirm_title">Eliminar transacciones sincronizadas</string>
+    <string name="delete_read_confirm_message">Se eliminarán de este dispositivo las transacciones ya subidas al servidor. Esta acción no se puede deshacer.</string>
+    <string name="deleting_read_content_description">Eliminando transacciones leídas…</string>
+    <string name="delete_read_success_content_description">Transacciones eliminadas</string>
 
     <string name="common_accept">Aceptar</string>
     <string name="common_cancel">Cancelar</string>
@@ -43,5 +47,8 @@
     <string name="snackbar_undo">Deshacer</string>
     <string name="snackbar_upload_summary_format">%1$d transacciones subidas correctamente. Hubo %2$d transacciones con errores.</string>
     <string name="snackbar_no_pending_transactions">No hay transacciones pendientes para subir.</string>
+    <string name="snackbar_deleted_read_count_format">%1$d transacciones eliminadas.</string>
+    <string name="snackbar_no_read_transactions">No hay transacciones leídas para eliminar.</string>
+    <string name="snackbar_delete_read_error">No se pudieron eliminar las transacciones.</string>
     <string name="uploading_content_description">Subiendo transacciones…</string>
 </resources>

@@ -1,5 +1,10 @@
 package com.eromn.microfintracker.ui.screens
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
@@ -10,6 +15,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -18,6 +25,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -43,6 +51,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import android.app.Activity
@@ -54,6 +63,7 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.view.WindowCompat
 import androidx.compose.foundation.layout.navigationBars
+import com.eromn.microfintracker.domain.model.DeleteReadResult
 import com.eromn.microfintracker.domain.model.UploadResult
 import com.eromn.microfintracker.ui.components.AddTransactionSheet
 import com.eromn.microfintracker.ui.components.SwipeableTransactionItem
@@ -102,6 +112,10 @@ fun DashboardPreview() {
             isUploading = false,
             uploadResult = null,
             onUploadResultShown = { },
+            onDeleteReadConfirmed = { },
+            isDeletingRead = false,
+            deleteReadResult = null,
+            onDeleteReadResultShown = { },
             onSaveTransaction = { _ -> },
             onTransactionClick = { },
             onDeleteTransaction = { },
@@ -132,13 +146,17 @@ fun DashboardPreview() {
  * @param isUploading true while an upload is in progress; blocks interaction and shows a spinner.
  * @param uploadResult outcome of the last upload attempt, if any, to surface via snackbar.
  * @param onUploadResultShown callback invoked after the upload result snackbar is shown.
+ * @param onDeleteReadConfirmed callback invoked when the user confirms deleting all read transactions.
+ * @param isDeletingRead true while read transactions are being deleted; blocks interaction and shows a spinner.
+ * @param deleteReadResult outcome of the last delete-read-transactions attempt, if any, to surface via snackbar.
+ * @param onDeleteReadResultShown callback invoked after the delete result snackbar is shown.
  * @param onSaveTransaction callback invoked with a transaction to save (create or update).
  * @param onTransactionClick callback invoked when a transaction item is clicked, typically to edit it.
  * @param onDeleteTransaction callback invoked when a transaction should be deleted.
  * @param onUndoDelete callback invoked when the user taps UNDO after a delete snackbar.
  * @param onDismissTransactionSheet callback invoked when the transaction edit/add sheet is dismissed.
  */
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
 @Composable
 fun DashboardScreen(
     username: String,
@@ -150,6 +168,10 @@ fun DashboardScreen(
     isUploading: Boolean,
     uploadResult: UploadResult?,
     onUploadResultShown: () -> Unit,
+    onDeleteReadConfirmed: () -> Unit,
+    isDeletingRead: Boolean,
+    deleteReadResult: DeleteReadResult?,
+    onDeleteReadResultShown: () -> Unit,
     onSaveTransaction: (Transaction) -> Unit,
     onTransactionClick: (Transaction) -> Unit,
     onDeleteTransaction: (Transaction) -> Unit,
@@ -166,6 +188,8 @@ fun DashboardScreen(
     onDismissCategoryPicker: () -> Unit
 ) {
     var showAddSheet by remember { mutableStateOf(false) }
+    var showDeleteConfirm by remember { mutableStateOf(false) }
+    var showDeleteSuccess by remember { mutableStateOf(false) }
 
     FinTrackTheme {
         val darkTheme = isSystemInDarkTheme()
@@ -201,6 +225,41 @@ fun DashboardScreen(
             }
         }
 
+        LaunchedEffect(deleteReadResult) {
+            if (deleteReadResult != null) {
+                when (deleteReadResult) {
+                    is DeleteReadResult.NoReadTransactions ->
+                        snackbarHostState.showSnackbar(
+                            message = context.getString(R.string.snackbar_no_read_transactions),
+                            duration = SnackbarDuration.Short
+                        )
+                    is DeleteReadResult.Deleted -> {
+                        showDeleteSuccess = true
+                        snackbarHostState.showSnackbar(
+                            message = context.getString(
+                                R.string.snackbar_deleted_read_count_format,
+                                deleteReadResult.count
+                            ),
+                            duration = SnackbarDuration.Short
+                        )
+                    }
+                    is DeleteReadResult.Failed ->
+                        snackbarHostState.showSnackbar(
+                            message = context.getString(R.string.snackbar_delete_read_error),
+                            duration = SnackbarDuration.Short
+                        )
+                }
+                onDeleteReadResultShown()
+            }
+        }
+
+        LaunchedEffect(showDeleteSuccess) {
+            if (showDeleteSuccess) {
+                delay(1500)
+                showDeleteSuccess = false
+            }
+        }
+
         Scaffold(
             containerColor = MaterialTheme.colorScheme.background,
             contentWindowInsets = WindowInsets.navigationBars,
@@ -208,7 +267,7 @@ fun DashboardScreen(
             floatingActionButton = {
                 FloatingActionButton(
                     onClick = {
-                        if (!isUploading) {
+                        if (!isUploading && !isDeletingRead) {
                             onAddTransactionRequested()
                             showAddSheet = true
                         }
@@ -237,8 +296,10 @@ fun DashboardScreen(
                     item {
                         UpperHeader(
                             username,
-                            onUploadToServer,
+onUploadToServer,
                             isUploading,
+                            { showDeleteConfirm = true },
+                            isDeletingRead,
                             monthlySpent,
                             todaySpent
                         )
@@ -311,8 +372,11 @@ fun DashboardScreen(
                     }
                 }
 
-                    if (isUploading) {
-                        // Blocks all pointer input and dims the list while uploading.
+                    if (isUploading || isDeletingRead) {
+                        // Blocks all pointer input and dims the list while an operation is in progress.
+                        val progressDescription =
+                            if (isDeletingRead) R.string.deleting_read_content_description
+                            else R.string.uploading_content_description
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
@@ -327,16 +391,62 @@ fun DashboardScreen(
                                 modifier = Modifier
                                     .align(Alignment.Center)
                                     .semantics {
-                                        contentDescription = context.getString(
-                                            R.string.uploading_content_description
-                                        )
+                                        contentDescription = context.getString(progressDescription)
                                     }
                             )
+                        }
+                    }
+
+                    AnimatedVisibility(
+                        visible = showDeleteSuccess,
+                        enter = fadeIn(initialAlpha = 0.0f) + scaleIn(initialScale = 0.6f),
+                        exit = fadeOut()
+                    ) {
+                        Box(modifier = Modifier.fillMaxSize()) {
+                            Surface(
+                                shape = CircleShape,
+                                color = MaterialTheme.colorScheme.primaryContainer,
+                                modifier = Modifier
+                                    .align(Alignment.Center)
+                                    .size(112.dp)
+                            ) {
+                                Icon(
+                                    painter = painterResource(R.drawable.ic_check),
+                                    contentDescription = context.getString(
+                                        R.string.delete_read_success_content_description
+                                    ),
+                                    modifier = Modifier
+                                        .align(Alignment.Center)
+                                        .size(64.dp),
+                                    tint = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                            }
                         }
                     }
             }
         }
     }
+
+        if (showDeleteConfirm && !isDeletingRead && !isUploading) {
+            AlertDialog(
+                onDismissRequest = { showDeleteConfirm = false },
+                title = { Text(stringResource(R.string.delete_read_confirm_title)) },
+                text = { Text(stringResource(R.string.delete_read_confirm_message)) },
+                confirmButton = {
+                    TextButton(onClick = {
+                        showDeleteConfirm = false
+                        onDeleteReadConfirmed()
+                    }) {
+                        Text(stringResource(R.string.common_accept))
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDeleteConfirm = false }) {
+                        Text(stringResource(R.string.common_cancel))
+                    }
+                }
+            )
+        }
 
         if (showAddSheet || editingTransaction != null) {
             AddTransactionSheet(
