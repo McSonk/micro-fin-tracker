@@ -12,6 +12,7 @@ This is a modern, offline-first expense tracker Android application with a Spani
 - **Asynchronous:** Kotlin Coroutines and Flow (`StateFlow`/`SharedFlow`). **NO `LiveData`.**
 - **Dependency Injection:** **NONE.** Use manual constructor injection. Wire dependencies through a `ViewModelProvider.Factory` (see `HistoryActivity`). Do NOT add Hilt, Dagger, or Koin.
 - **Local Database:** Room 2.7.2 (using KSP for annotation processing).
+- **Networking (for future FastAPI integration; not yet wired):** Retrofit 3.0.0 + OkHttp 5.0.0 (logging interceptor, MockWebServer for tests) with kotlinx-serialization-json 1.9.0 (`org.jetbrains.kotlin.plugin.serialization` plugin enabled).
 
 ## 3. Build & Verify (Crucial for CLI Agents)
 - **Execution:** Run `./gradlew` directly.
@@ -50,7 +51,7 @@ app/src/main/java/com/eromn/microfintracker/
 1. **Screens vs Components:** Full pages/routes go in `ui/screens/`. Reusable UI pieces go in `ui/components/`.
 2. **Models:** If the UI needs different data than the database (or future API), create a pure Kotlin class in `domain/model/` and map the Entity to it in the Repository.
 3. **Repositories:** Interface goes in `domain/repository/`. Implementation goes in `data/repository/`.
-4. **Future FastAPI Code:** All Retrofit/Ktor interfaces and DTOs MUST go in `data/remote/`.
+4. **Future FastAPI Code:** All Retrofit interfaces and DTOs MUST go in `data/remote/`.
 5. **Room Rules:** 
    - Schemas are exported to `app/schemas/com.eromn.microfintracker.data.AppDatabase/`. Any entity change requires bumping `version` in `AppDatabase.kt`, adding an `AutoMigration`/`Migration`, and committing the newly generated JSON alongside existing ones.
    - The table name is the SQL keyword `` `transaction` `` — **always backtick it** in `@Query` annotations.
