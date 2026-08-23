@@ -45,7 +45,14 @@
     <string name="delete_content_description">Eliminar</string>
     <string name="snackbar_deleted_format">Eliminado: %1$s</string>
     <string name="snackbar_undo">Deshacer</string>
-    <string name="snackbar_upload_summary_format">%1$d transacciones subidas correctamente. Hubo %2$d transacciones con errores.</string>
+    <plurals name="upload_success_count">
+        <item quantity="one">%d transacción subida correctamente.</item>
+        <item quantity="other">%d transacciones subidas correctamente.</item>
+    </plurals>
+    <plurals name="upload_error_count">
+        <item quantity="one">Hubo %d transacción con errores.</item>
+        <item quantity="other">Hubo %d transacciones con errores.</item>
+    </plurals>
     <string name="snackbar_no_pending_transactions">No hay transacciones pendientes para subir.</string>
     <string name="snackbar_no_read_transactions">No hay transacciones leídas para eliminar.</string>
     <string name="snackbar_delete_read_error">No se pudieron eliminar las transacciones.</string>

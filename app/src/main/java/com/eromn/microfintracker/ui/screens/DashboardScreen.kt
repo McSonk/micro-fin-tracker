@@ -213,12 +213,25 @@ fun DashboardScreen(
                 val message = when (uploadResult) {
                     is UploadResult.NoPendingTransactions ->
                         context.getString(R.string.snackbar_no_pending_transactions)
-                    is UploadResult.Summary ->
-                        context.getString(
-                            R.string.snackbar_upload_summary_format,
-                            uploadResult.successCount,
-                            uploadResult.errorCount
+                    is UploadResult.Summary -> buildString {
+                        append(
+                            context.resources.getQuantityString(
+                                R.plurals.upload_success_count,
+                                uploadResult.successCount,
+                                uploadResult.successCount
+                            )
                         )
+                        if (uploadResult.errorCount > 0) {
+                            append(' ')
+                            append(
+                                context.resources.getQuantityString(
+                                    R.plurals.upload_error_count,
+                                    uploadResult.errorCount,
+                                    uploadResult.errorCount
+                                )
+                            )
+                        }
+                    }
                 }
                 snackbarHostState.showSnackbar(message = message, duration = SnackbarDuration.Short)
                 onUploadResultShown()
