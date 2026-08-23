@@ -63,6 +63,11 @@ class HistoryViewModel(
 
     private val _isUploading = MutableStateFlow(false)
 
+    /**
+     * True while an upload to the server is in progress.
+     */
+    val isUploading: StateFlow<Boolean> = _isUploading.asStateFlow()
+
     private val _uploadResult = MutableStateFlow<UploadResult?>(null)
 
     /**

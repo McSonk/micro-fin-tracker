@@ -1,5 +1,7 @@
 package com.eromn.microfintracker.ui.screens
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -8,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -16,7 +19,11 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -92,6 +99,7 @@ fun DashboardPreview() {
             transactionsByDate = groupedTransactions,
             editingTransaction = null,
             onUploadToServer = { },
+            isUploading = false,
             uploadResult = null,
             onUploadResultShown = { },
             onSaveTransaction = { _ -> },
@@ -121,6 +129,7 @@ fun DashboardPreview() {
  * @param transactionsByDate transactions grouped by a header label (e.g. "Hoy", "Ayer").
  * @param editingTransaction transaction currently being edited, if any.
  * @param onUploadToServer callback when the user requests to upload pending transactions.
+ * @param isUploading true while an upload is in progress; blocks interaction and shows a spinner.
  * @param uploadResult outcome of the last upload attempt, if any, to surface via snackbar.
  * @param onUploadResultShown callback invoked after the upload result snackbar is shown.
  * @param onSaveTransaction callback invoked with a transaction to save (create or update).
@@ -138,6 +147,7 @@ fun DashboardScreen(
     transactionsByDate: Map<String, List<Transaction>>,
     editingTransaction: Transaction?,
     onUploadToServer: () -> Unit,
+    isUploading: Boolean,
     uploadResult: UploadResult?,
     onUploadResultShown: () -> Unit,
     onSaveTransaction: (Transaction) -> Unit,
@@ -198,8 +208,10 @@ fun DashboardScreen(
             floatingActionButton = {
                 FloatingActionButton(
                     onClick = {
-                        onAddTransactionRequested()
-                        showAddSheet = true
+                        if (!isUploading) {
+                            onAddTransactionRequested()
+                            showAddSheet = true
+                        }
                     },
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
                     contentColor = MaterialTheme.colorScheme.onPrimaryContainer
@@ -219,12 +231,14 @@ fun DashboardScreen(
                     .padding(innerPadding),
                 color = MaterialTheme.colorScheme.background
             ) {
-                LazyColumn(modifier = Modifier.fillMaxSize()) {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    LazyColumn(modifier = Modifier.fillMaxSize()) {
                     // TOP ZONE: contrasting panel, scrolls away with the content
                     item {
                         UpperHeader(
                             username,
                             onUploadToServer,
+                            isUploading,
                             monthlySpent,
                             todaySpent
                         )
@@ -296,8 +310,33 @@ fun DashboardScreen(
                         Spacer(modifier = Modifier.height(80.dp))
                     }
                 }
+
+                    if (isUploading) {
+                        // Blocks all pointer input and dims the list while uploading.
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.32f))
+                                .pointerInput(Unit) {
+                                    awaitPointerEventScope {
+                                        while (true) awaitPointerEvent()
+                                    }
+                                }
+                        ) {
+                            CircularProgressIndicator(
+                                modifier = Modifier
+                                    .align(Alignment.Center)
+                                    .semantics {
+                                        contentDescription = context.getString(
+                                            R.string.uploading_content_description
+                                        )
+                                    }
+                            )
+                        }
+                    }
             }
         }
+    }
 
         if (showAddSheet || editingTransaction != null) {
             AddTransactionSheet(

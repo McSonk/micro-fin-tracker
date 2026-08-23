@@ -49,6 +49,7 @@ class HistoryActivity : AppCompatActivity() {
             val isCategoryPickerVisible by historyViewModel.isCategoryPickerVisible.collectAsStateWithLifecycle()
             val categorySearchQuery by historyViewModel.categorySearchQuery.collectAsStateWithLifecycle()
             val uploadResult by historyViewModel.uploadResult.collectAsStateWithLifecycle()
+            val isUploading by historyViewModel.isUploading.collectAsStateWithLifecycle()
 
             LaunchedEffect(saveFailed) {
                 if (saveFailed) {
@@ -68,6 +69,7 @@ class HistoryActivity : AppCompatActivity() {
                 transactionsByDate = transactions,
                 editingTransaction = editingTransaction,
                 onUploadToServer = { historyViewModel.uploadToServer() },
+                isUploading = isUploading,
                 uploadResult = uploadResult,
                 onUploadResultShown = { historyViewModel.clearUploadResult() },
                 onSaveTransaction = { transaction ->

@@ -42,4 +42,5 @@
     <string name="snackbar_undo">Deshacer</string>
     <string name="snackbar_upload_summary_format">%1$d transacciones subidas correctamente. Hubo %2$d transacciones con errores.</string>
     <string name="snackbar_no_pending_transactions">No hay transacciones pendientes para subir.</string>
+    <string name="uploading_content_description">Subiendo transacciones…</string>
 </resources>

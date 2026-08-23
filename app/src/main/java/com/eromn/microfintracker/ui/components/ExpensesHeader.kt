@@ -32,6 +32,7 @@ fun PreviewHeaderLayout() {
     UpperHeader(
         "McSonk",
         {},
+        false,
         500.0,
         100.0
     )
@@ -41,6 +42,7 @@ fun PreviewHeaderLayout() {
 fun UpperHeader(
     username: String,
     onUploadToServer: () -> Unit,
+    isUploading: Boolean,
     monthlySpent: Double,
     todaySpent: Double
 ) {
@@ -51,7 +53,7 @@ fun UpperHeader(
             .background(MaterialTheme.colorScheme.inverseSurface) // then paint over it
             .padding(bottom = 16.dp)
     ) {
-        HeaderSection(username, onUploadToServer)
+        HeaderSection(username, onUploadToServer, isUploading)
         Spacer(modifier = Modifier.height(24.dp))
         SpendingSummary(monthlySpent, todaySpent)
     }
@@ -60,7 +62,8 @@ fun UpperHeader(
 @Composable
 private fun HeaderSection(
     username: String,
-    onUploadToServer: () -> Unit
+    onUploadToServer: () -> Unit,
+    isUploading: Boolean
 ) {
     Column(
         modifier = Modifier
@@ -88,7 +91,7 @@ private fun HeaderSection(
                 )
             }
 
-            IconButton(onClick = onUploadToServer) {
+            IconButton(onClick = onUploadToServer, enabled = !isUploading) {
                 Icon(
                     painter = painterResource(R.drawable.ic_cloud_upload_24),
                     contentDescription = stringResource(R.string.upload_content_description),
