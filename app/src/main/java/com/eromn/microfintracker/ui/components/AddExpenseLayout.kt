@@ -83,6 +83,7 @@ fun AddTransactionPreview(){
         initialTransaction = null,
         selectedCategory = Category.OTHERS,
         onCategoryFieldClicked = { },
+        onCategorySelected = { },
         onSave = { _ -> }
     )
 }// end AddTransactionPreview
@@ -159,6 +160,7 @@ fun AddTransactionSheet(
             initialTransaction = initialTransaction,
             selectedCategory = selectedCategory,
             onCategoryFieldClicked = onCategoryFieldClicked,
+            onCategorySelected = onCategorySelected,
             launchDatePicker = { showDatePicker = true },
             launchTimePicker = { showTimePicker = true },
             datePickerState = datePickerState,
@@ -215,6 +217,7 @@ fun AddTransactionSheet(
  * @param initialTransaction Optional transaction being edited; null for a new transaction.
  * @param selectedCategory The currently selected category.
  * @param onCategoryFieldClicked Callback invoked when the category field is clicked.
+ * @param onCategorySelected Callback invoked when a category should be programmatically selected.
  * @param onDismiss Callback invoked to dismiss the form.
  * @param onSave Callback invoked with the constructed transaction.
  */
@@ -228,6 +231,7 @@ fun AddTransactionForm(
     initialTransaction: Transaction? = null,
     selectedCategory: Category,
     onCategoryFieldClicked: () -> Unit,
+    onCategorySelected: (Category) -> Unit,
     onDismiss: () -> Unit,
     onSave: (Transaction) -> Unit,
 ) {
@@ -274,6 +278,7 @@ fun AddTransactionForm(
                     description = YOUBIKE_QUICK_LABEL
                     amount = 10.0.toString()
                 }
+                onCategorySelected(Category.TRANSPORT)
             }) {
                 Icon(
                     painter = painterResource(R.drawable.ic_bike_lane_24),
@@ -292,6 +297,7 @@ fun AddTransactionForm(
                     description = MRT_QUICK_LABEL
                     amount = 20.0.toString()
                 }
+                onCategorySelected(Category.TRANSPORT)
             }) {
                 Icon(
                     painter = painterResource(R.drawable.ic_train_24),
