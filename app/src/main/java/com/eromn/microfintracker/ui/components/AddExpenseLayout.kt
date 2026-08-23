@@ -422,6 +422,25 @@ fun AddTransactionForm(
             }
         }// end row (date and time)
 
+        val selectedDateMillis = datePickerState.selectedDateMillis
+        val isDateTimeInFuture = selectedDateMillis != null &&
+            DateUtils.isDateTimeInFuture(
+                selectedDateMillis,
+                timePickerState.hour,
+                timePickerState.minute
+            )
+
+        if (isDateTimeInFuture) {
+            Text(
+                text = stringResource(R.string.add_tx_future_error),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp)
+            )
+        }
+
         Row( //Buttons
             modifier = Modifier
                 .fillMaxWidth()
@@ -433,7 +452,8 @@ fun AddTransactionForm(
             }
             Spacer(modifier = Modifier.width(8.dp))
             val amountDouble = amount.toDoubleOrNull() ?: 0.0
-            val isValid = description.isNotBlank() && amountDouble.isFinite() && amountDouble > 0
+            val isValid = description.isNotBlank() && amountDouble.isFinite() && amountDouble > 0 &&
+                !isDateTimeInFuture
             Button(
                 enabled = isValid,
                 onClick = {

@@ -188,5 +188,14 @@ class DateUtils {
             }.timeInMillis
         }
 
+        /**
+         * Returns true when the date/time formed by combining a UTC date (milliseconds at UTC
+         * midnight) with a local hour/minute is strictly in the future.
+         */
+        fun isDateTimeInFuture(utcDate: Long, hour: Int, minute: Int): Boolean {
+            val merged = mergeDateTimeUTC(utcDate, hour, minute)
+            return merged > System.currentTimeMillis()
+        }
+
     }
 }
