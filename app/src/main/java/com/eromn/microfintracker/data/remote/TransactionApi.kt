@@ -1,5 +1,6 @@
 package com.eromn.microfintracker.data.remote
 
+import com.eromn.microfintracker.BuildConfig
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -47,11 +48,14 @@ interface TransactionApi {
         }
 
         private fun defaultClient(): OkHttpClient {
-            return OkHttpClient.Builder()
-                .addInterceptor(
-                    HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY)
-                )
-                .build()
+            return OkHttpClient.Builder().apply {
+                // Never log request/response bodies outside of debug builds.
+                if (BuildConfig.DEBUG) {
+                    addInterceptor(
+                        HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY)
+                    )
+                }
+            }.build()
         }
     }
 }
