@@ -31,6 +31,7 @@
     <string name="add_tx_date">Fecha</string>
     <string name="add_tx_time">Hora</string>
     <string name="add_tx_select_time">Selecciona la hora</string>
+    <string name="add_tx_future_error">La fecha y hora no pueden estar en el futuro</string>
     <string name="quick_btn_youbike">YouBike</string>
     <string name="quick_btn_mrt">MRT</string>
 
