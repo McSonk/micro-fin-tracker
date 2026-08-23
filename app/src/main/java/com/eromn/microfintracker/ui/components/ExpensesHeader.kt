@@ -90,7 +90,7 @@ private fun HeaderSection(
 
             IconButton(onClick = onUploadToServer) {
                 Icon(
-                    painter = painterResource(R.drawable.ic_logout_24),
+                    painter = painterResource(R.drawable.ic_cloud_upload_24),
                     contentDescription = stringResource(R.string.upload_content_description),
                     tint = MaterialTheme.colorScheme.inverseOnSurface
                 )
