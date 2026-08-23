@@ -40,7 +40,7 @@ fun PreviewHeaderLayout() {
 @Composable
 fun UpperHeader(
     username: String,
-    onLogout: () -> Unit,
+    onUploadToServer: () -> Unit,
     monthlySpent: Double,
     todaySpent: Double
 ) {
@@ -51,7 +51,7 @@ fun UpperHeader(
             .background(MaterialTheme.colorScheme.inverseSurface) // then paint over it
             .padding(bottom = 16.dp)
     ) {
-        HeaderSection(username, onLogout)
+        HeaderSection(username, onUploadToServer)
         Spacer(modifier = Modifier.height(24.dp))
         SpendingSummary(monthlySpent, todaySpent)
     }
@@ -60,7 +60,7 @@ fun UpperHeader(
 @Composable
 private fun HeaderSection(
     username: String,
-    onLogout: () -> Unit
+    onUploadToServer: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -88,10 +88,10 @@ private fun HeaderSection(
                 )
             }
 
-            IconButton(onClick = onLogout) {
+            IconButton(onClick = onUploadToServer) {
                 Icon(
                     painter = painterResource(R.drawable.ic_logout_24),
-                    contentDescription = stringResource(R.string.logout_content_description),
+                    contentDescription = stringResource(R.string.upload_content_description),
                     tint = MaterialTheme.colorScheme.inverseOnSurface
                 )
             }

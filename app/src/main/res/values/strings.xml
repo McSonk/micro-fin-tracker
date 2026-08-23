@@ -9,7 +9,7 @@
     <string name="header_welcome_back">Bienvenido de nuevo</string>
     <string name="header_spent_this_month">Gastado este mes</string>
     <string name="header_today_spent">$%1$s hoy</string>
-    <string name="logout_content_description">Cerrar sesión</string>
+    <string name="upload_content_description">Subir transacciones al servidor</string>
     <string name="dashboard_transactions_title">Transacciones</string>
 
     <string name="common_accept">Aceptar</string>
@@ -40,4 +40,6 @@
     <string name="delete_content_description">Eliminar</string>
     <string name="snackbar_deleted_format">Eliminado: %1$s</string>
     <string name="snackbar_undo">Deshacer</string>
+    <string name="snackbar_upload_summary_format">%1$d transacciones subidas correctamente. Hubo %2$d transacciones con errores.</string>
+    <string name="snackbar_no_pending_transactions">No hay transacciones pendientes para subir.</string>
 </resources>

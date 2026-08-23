@@ -42,10 +42,12 @@ import android.app.Activity
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.view.WindowCompat
 import androidx.compose.foundation.layout.navigationBars
+import com.eromn.microfintracker.domain.model.UploadResult
 import com.eromn.microfintracker.ui.components.AddTransactionSheet
 import com.eromn.microfintracker.ui.components.SwipeableTransactionItem
 import com.eromn.microfintracker.ui.components.UpperHeader
@@ -89,7 +91,9 @@ fun DashboardPreview() {
             todaySpent = 500.0,
             transactionsByDate = groupedTransactions,
             editingTransaction = null,
-            onLogout = { },
+            onUploadToServer = { },
+            uploadResult = null,
+            onUploadResultShown = { },
             onSaveTransaction = { _ -> },
             onTransactionClick = { },
             onDeleteTransaction = { },
@@ -116,7 +120,9 @@ fun DashboardPreview() {
  * @param todaySpent total spending today shown in the header.
  * @param transactionsByDate transactions grouped by a header label (e.g. "Hoy", "Ayer").
  * @param editingTransaction transaction currently being edited, if any.
- * @param onLogout callback when the user requests to log out.
+ * @param onUploadToServer callback when the user requests to upload pending transactions.
+ * @param uploadResult outcome of the last upload attempt, if any, to surface via snackbar.
+ * @param onUploadResultShown callback invoked after the upload result snackbar is shown.
  * @param onSaveTransaction callback invoked with a transaction to save (create or update).
  * @param onTransactionClick callback invoked when a transaction item is clicked, typically to edit it.
  * @param onDeleteTransaction callback invoked when a transaction should be deleted.
@@ -131,7 +137,9 @@ fun DashboardScreen(
     todaySpent: Double,
     transactionsByDate: Map<String, List<Transaction>>,
     editingTransaction: Transaction?,
-    onLogout: () -> Unit,
+    onUploadToServer: () -> Unit,
+    uploadResult: UploadResult?,
+    onUploadResultShown: () -> Unit,
     onSaveTransaction: (Transaction) -> Unit,
     onTransactionClick: (Transaction) -> Unit,
     onDeleteTransaction: (Transaction) -> Unit,
@@ -166,6 +174,23 @@ fun DashboardScreen(
         val coroutineScope = rememberCoroutineScope()
         val context = LocalContext.current
 
+        LaunchedEffect(uploadResult) {
+            if (uploadResult != null) {
+                val message = when (uploadResult) {
+                    is UploadResult.NoPendingTransactions ->
+                        context.getString(R.string.snackbar_no_pending_transactions)
+                    is UploadResult.Summary ->
+                        context.getString(
+                            R.string.snackbar_upload_summary_format,
+                            uploadResult.successCount,
+                            uploadResult.errorCount
+                        )
+                }
+                snackbarHostState.showSnackbar(message = message, duration = SnackbarDuration.Short)
+                onUploadResultShown()
+            }
+        }
+
         Scaffold(
             containerColor = MaterialTheme.colorScheme.background,
             contentWindowInsets = WindowInsets.navigationBars,
@@ -199,7 +224,7 @@ fun DashboardScreen(
                     item {
                         UpperHeader(
                             username,
-                            onLogout,
+                            onUploadToServer,
                             monthlySpent,
                             todaySpent
                         )

@@ -6,7 +6,9 @@ import androidx.lifecycle.viewModelScope
 import com.eromn.microfintracker.data.Category
 import com.eromn.microfintracker.data.Transaction
 import com.eromn.microfintracker.data.TransactionRepository
+import com.eromn.microfintracker.domain.model.UploadResult
 import com.eromn.microfintracker.domain.repository.CategoryRepository
+import com.eromn.microfintracker.domain.repository.TransactionUploadRepository
 import com.eromn.microfintracker.utils.DateUtils
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -27,7 +29,8 @@ import kotlinx.coroutines.launch
  */
 class HistoryViewModel(
     private val repository: TransactionRepository,
-    private val categoryRepository: CategoryRepository
+    private val categoryRepository: CategoryRepository,
+    private val uploadRepository: TransactionUploadRepository
 ) : ViewModel() {
 
     /**
@@ -57,6 +60,15 @@ class HistoryViewModel(
      * True if the last save operation failed.
      */
     val saveFailed: StateFlow<Boolean> = _saveFailed.asStateFlow()
+
+    private val _isUploading = MutableStateFlow(false)
+
+    private val _uploadResult = MutableStateFlow<UploadResult?>(null)
+
+    /**
+     * The outcome of the last upload attempt, if any.
+     */
+    val uploadResult: StateFlow<UploadResult?> = _uploadResult.asStateFlow()
 
     // Category picker state
     private val _categoryOptions = MutableStateFlow<List<Category>>(emptyList())
@@ -192,12 +204,39 @@ class HistoryViewModel(
             _editingTransaction.value = null
             _saveFailed.value = false
         } catch (e: Exception) {
-            if(e is CancellationException){
+            if (e is CancellationException) {
                 // If the user switched screen on purpose
                 throw e
             }
             _saveFailed.value = true
         }
+    }
+
+    /**
+     * Uploads all pending transactions to the server. Ignores the request while an
+     * upload is already in progress and exposes the outcome via [uploadResult].
+     */
+    fun uploadToServer() {
+        if (_isUploading.value) return
+        _isUploading.value = true
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                _uploadResult.value = uploadRepository.uploadPendingTransactions()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                _uploadResult.value = UploadResult.Summary(0, 0)
+            } finally {
+                _isUploading.value = false
+            }
+        }
+    }
+
+    /**
+     * Clears the upload result once the UI has shown its feedback.
+     */
+    fun clearUploadResult() {
+        _uploadResult.value = null
     }
 
     // Category picker actions
@@ -227,7 +266,8 @@ class HistoryViewModel(
  */
 class HistoryViewModelFactory(
     private val repository: TransactionRepository,
-    private val categoryRepository: CategoryRepository
+    private val categoryRepository: CategoryRepository,
+    private val uploadRepository: TransactionUploadRepository
 ) : ViewModelProvider.Factory {
     /**
      * Creates a new instance of [HistoryViewModel].
@@ -235,7 +275,7 @@ class HistoryViewModelFactory(
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(HistoryViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return HistoryViewModel(repository, categoryRepository) as T
+            return HistoryViewModel(repository, categoryRepository, uploadRepository) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

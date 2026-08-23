@@ -11,7 +11,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import com.eromn.microfintracker.data.AppDatabase
 import com.eromn.microfintracker.data.TransactionRepository
+import com.eromn.microfintracker.data.remote.TransactionApi
 import com.eromn.microfintracker.data.repository.CategoryRepositoryImpl
+import com.eromn.microfintracker.data.repository.TransactionUploadRepositoryImpl
 import com.eromn.microfintracker.ui.screens.DashboardScreen
 import com.eromn.microfintracker.viewmodel.HistoryViewModel
 import com.eromn.microfintracker.viewmodel.HistoryViewModelFactory
@@ -21,9 +23,14 @@ import com.eromn.microfintracker.viewmodel.HistoryViewModelFactory
  */
 class HistoryActivity : AppCompatActivity() {
     private val historyViewModel: HistoryViewModel by viewModels {
+        val transactionDao = AppDatabase.getDatabase(applicationContext).transactionDao()
         HistoryViewModelFactory(
-            TransactionRepository(AppDatabase.getDatabase(applicationContext).transactionDao()),
-            CategoryRepositoryImpl()
+            TransactionRepository(transactionDao),
+            CategoryRepositoryImpl(),
+            TransactionUploadRepositoryImpl(
+                transactionDao,
+                TransactionApi.create()
+            )
         )
     }
 
@@ -41,6 +48,7 @@ class HistoryActivity : AppCompatActivity() {
             val selectedCategory by historyViewModel.selectedCategory.collectAsStateWithLifecycle()
             val isCategoryPickerVisible by historyViewModel.isCategoryPickerVisible.collectAsStateWithLifecycle()
             val categorySearchQuery by historyViewModel.categorySearchQuery.collectAsStateWithLifecycle()
+            val uploadResult by historyViewModel.uploadResult.collectAsStateWithLifecycle()
 
             LaunchedEffect(saveFailed) {
                 if (saveFailed) {
@@ -59,7 +67,9 @@ class HistoryActivity : AppCompatActivity() {
                 todaySpent = 500.0,
                 transactionsByDate = transactions,
                 editingTransaction = editingTransaction,
-                onLogout = {},
+                onUploadToServer = { historyViewModel.uploadToServer() },
+                uploadResult = uploadResult,
+                onUploadResultShown = { historyViewModel.clearUploadResult() },
                 onSaveTransaction = { transaction ->
                     historyViewModel.saveTransaction(transaction)
                 },

@@ -20,6 +20,12 @@ interface TransactionDao {
     fun getAll(): Flow<List<Transaction>>
 
     /**
+     * Returns all transactions that have not been uploaded to the server yet.
+     */
+    @Query("SELECT * FROM `transaction` WHERE is_read = 0 ORDER BY timestamp ASC, id ASC")
+    suspend fun getUnread(): List<Transaction>
+
+    /**
      * Inserts a new transaction into the database.
      */
     @Insert
