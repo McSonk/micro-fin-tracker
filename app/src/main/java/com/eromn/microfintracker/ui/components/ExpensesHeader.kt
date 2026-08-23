@@ -73,10 +73,9 @@ private fun HeaderSection(
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column {
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = stringResource(R.string.header_welcome_back),
                     fontSize = 14.sp,
@@ -95,6 +94,14 @@ private fun HeaderSection(
                 Icon(
                     painter = painterResource(R.drawable.ic_cloud_upload_24),
                     contentDescription = stringResource(R.string.upload_content_description),
+                    tint = MaterialTheme.colorScheme.inverseOnSurface
+                )
+            }
+
+            IconButton(onClick = {}) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_delete_forever_24),
+                    contentDescription = stringResource(R.string.delete_read_transactions_content_description),
                     tint = MaterialTheme.colorScheme.inverseOnSurface
                 )
             }
