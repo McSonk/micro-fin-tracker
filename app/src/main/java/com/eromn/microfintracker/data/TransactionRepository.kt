@@ -21,4 +21,8 @@ class TransactionRepository(private val transactionDao: TransactionDao) {
         transactionDao.deleteById(id)
     }
 
+    suspend fun deleteRead(): Int {
+        return transactionDao.deleteRead()
+    }
+
 }

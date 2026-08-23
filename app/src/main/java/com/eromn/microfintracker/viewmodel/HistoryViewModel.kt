@@ -1,12 +1,16 @@
 package com.eromn.microfintracker.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.eromn.microfintracker.data.Category
 import com.eromn.microfintracker.data.Transaction
 import com.eromn.microfintracker.data.TransactionRepository
+import com.eromn.microfintracker.domain.model.DeleteReadResult
+import com.eromn.microfintracker.domain.model.UploadResult
 import com.eromn.microfintracker.domain.repository.CategoryRepository
+import com.eromn.microfintracker.domain.repository.TransactionUploadRepository
 import com.eromn.microfintracker.utils.DateUtils
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -27,7 +31,8 @@ import kotlinx.coroutines.launch
  */
 class HistoryViewModel(
     private val repository: TransactionRepository,
-    private val categoryRepository: CategoryRepository
+    private val categoryRepository: CategoryRepository,
+    private val uploadRepository: TransactionUploadRepository
 ) : ViewModel() {
 
     /**
@@ -57,6 +62,34 @@ class HistoryViewModel(
      * True if the last save operation failed.
      */
     val saveFailed: StateFlow<Boolean> = _saveFailed.asStateFlow()
+
+    private val _isUploading = MutableStateFlow(false)
+
+    /**
+     * True while an upload to the server is in progress.
+     */
+    val isUploading: StateFlow<Boolean> = _isUploading.asStateFlow()
+
+    private val _uploadResult = MutableStateFlow<UploadResult?>(null)
+
+    /**
+     * The outcome of the last upload attempt, if any.
+     */
+    val uploadResult: StateFlow<UploadResult?> = _uploadResult.asStateFlow()
+
+    private val _isDeletingRead = MutableStateFlow(false)
+
+    /**
+     * True while a delete of read transactions is in progress.
+     */
+    val isDeletingRead: StateFlow<Boolean> = _isDeletingRead.asStateFlow()
+
+    private val _deleteReadResult = MutableStateFlow<DeleteReadResult?>(null)
+
+    /**
+     * The outcome of the last delete-read-transactions attempt, if any.
+     */
+    val deleteReadResult: StateFlow<DeleteReadResult?> = _deleteReadResult.asStateFlow()
 
     // Category picker state
     private val _categoryOptions = MutableStateFlow<List<Category>>(emptyList())
@@ -192,12 +225,71 @@ class HistoryViewModel(
             _editingTransaction.value = null
             _saveFailed.value = false
         } catch (e: Exception) {
-            if(e is CancellationException){
+            if (e is CancellationException) {
                 // If the user switched screen on purpose
                 throw e
             }
             _saveFailed.value = true
         }
+    }
+
+    /**
+     * Uploads all pending transactions to the server. Ignores the request while an
+     * upload is already in progress and exposes the outcome via [uploadResult].
+     */
+    fun uploadToServer() {
+        if (_isUploading.value || _isDeletingRead.value) return
+        _isUploading.value = true
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                _uploadResult.value = uploadRepository.uploadPendingTransactions()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.e(TAG, "uploadToServer failed", e)
+                _uploadResult.value = UploadResult.Failed
+            } finally {
+                _isUploading.value = false
+            }
+        }
+    }
+
+    /**
+     * Clears the upload result once the UI has shown its feedback.
+     */
+    fun clearUploadResult() {
+        _uploadResult.value = null
+    }
+
+    /**
+     * Deletes all transactions that have already been uploaded to the server.
+     * Ignores the request while a deletion or an upload is already in progress and
+     * exposes the outcome via [deleteReadResult].
+     */
+    fun deleteReadTransactions() {
+        if (_isDeletingRead.value || _isUploading.value) return
+        _isDeletingRead.value = true
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val count = repository.deleteRead()
+                _deleteReadResult.value =
+                    if (count == 0) DeleteReadResult.NoReadTransactions
+                    else DeleteReadResult.Deleted(count)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                _deleteReadResult.value = DeleteReadResult.Failed
+            } finally {
+                _isDeletingRead.value = false
+            }
+        }
+    }
+
+    /**
+     * Clears the delete-read-transactions result once the UI has shown its feedback.
+     */
+    fun clearDeleteReadResult() {
+        _deleteReadResult.value = null
     }
 
     // Category picker actions
@@ -220,6 +312,10 @@ class HistoryViewModel(
         _isCategoryPickerVisible.value = false
         _categorySearchQuery.value = ""
     }
+
+    private companion object {
+        const val TAG = "HistoryViewModel"
+    }
 }
 
 /**
@@ -227,7 +323,8 @@ class HistoryViewModel(
  */
 class HistoryViewModelFactory(
     private val repository: TransactionRepository,
-    private val categoryRepository: CategoryRepository
+    private val categoryRepository: CategoryRepository,
+    private val uploadRepository: TransactionUploadRepository
 ) : ViewModelProvider.Factory {
     /**
      * Creates a new instance of [HistoryViewModel].
@@ -235,7 +332,7 @@ class HistoryViewModelFactory(
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(HistoryViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return HistoryViewModel(repository, categoryRepository) as T
+            return HistoryViewModel(repository, categoryRepository, uploadRepository) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

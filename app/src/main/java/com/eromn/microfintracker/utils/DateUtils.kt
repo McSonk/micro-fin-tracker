@@ -4,6 +4,7 @@ import java.time.Duration
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Locale
@@ -14,6 +15,15 @@ import java.util.Locale
 class DateUtils {
     companion object {
         private val mxLocal = Locale.Builder().setLanguage("es").setRegion("MX").build()
+
+        /**
+         * Formats a timestamp (milliseconds) as an ISO 8601 date-time string in UTC,
+         * always including milliseconds. Example: "2026-08-21T04:52:00.000Z".
+         */
+        fun formatIso8601Utc(timestamp: Long): String {
+            val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+            return Instant.ofEpochMilli(timestamp).atZone(ZoneOffset.UTC).format(formatter)
+        }
 
         /**
          * Formats a timestamp (milliseconds) as a local time string using the Spanish locale.
